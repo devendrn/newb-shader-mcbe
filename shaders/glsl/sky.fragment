@@ -1,0 +1,47 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+// copyright © Newb Shader
+
+#if __VERSION__ >= 300
+    #define varying in
+    out vec4 FragColor;
+    #define gl_FragColor FragColor
+#endif
+
+#include "config_utilities/color.h"
+
+varying vec3 zenith_color;
+varying vec3 horizon_color;
+varying vec3 horizon_edge_color;
+varying vec3 wPos;
+
+vec3 renderSky(vec3 reddishTint, vec3 horizonColor, vec3 zenithColor, float h){
+
+    h = 1.0-h*h;
+
+    float hsq = h*h;
+    hsq *= hsq;
+
+    // gradient 1 = h^12
+    // gradient 2 = h^5
+    float gradient1 = hsq*hsq*hsq*hsq;
+    float gradient2 = hsq*h;
+
+    horizonColor = mix(horizonColor, reddishTint, gradient1);
+    return mix(zenithColor,horizonColor, gradient2 );
+
+}
+
+
+void main()
+{
+    //vec3 spherePos = normalize(wPos.xyz);
+    float sphereY = max(0.0,wPos.y/sqrt(dot(wPos.xyz,wPos.xyz)));
+
+    vec3 skyColor = renderSky(horizon_edge_color,horizon_color,zenith_color,sphereY);
+
+    // its better to do color correction in vertex but it causes blue sky issue on some devices
+    skyColor = colorCorrection(skyColor);
+    
+	gl_FragColor = vec4(skyColor,1.0);
+}

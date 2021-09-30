@@ -1,0 +1,42 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+
+#include "vertexVersionCentroidUV.h"
+
+#include "uniformWorldConstants.h"
+#include "uniformShaderConstants.h"
+#include "config_utilities/color.h"
+
+//varying vec3 zenith_color;
+//varying vec3 void_color;
+varying vec3 horizon_color;
+varying vec3 pos;
+
+uniform highp float TOTAL_REAL_WORLD_TIME;
+
+attribute POS4 POSITION;
+attribute vec2 TEXCOORD_0;
+
+void main()
+{    pos = -POSITION.xyz;
+
+    vec4 rotatedPos = POSITION;
+    
+    // pi/1800 (one complete rotation per hour)
+    highp float t = 0.00174532925*TOTAL_REAL_WORLD_TIME;
+    
+    // rotate skybox
+    float sinA = sin(t);
+    float cosA = cos(t);
+    mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
+    rotatedPos.xz = rotate*rotatedPos.xz;
+
+    gl_Position = WORLDVIEWPROJ * rotatedPos;
+
+    uv = 0.1*(UV_TRANSFORM * vec4(TEXCOORD_0, 0, 1)).xy;
+
+//void_color = colorCorrection(vec3(0.16,0.06,0.2));
+//zenith_color = colorCorrection(vec3(0.03,0.0,0.05));
+horizon_color = colorCorrection(vec3(0.16,0.06,0.2));
+
+}

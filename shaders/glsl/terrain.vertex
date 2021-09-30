@@ -1,0 +1,850 @@
+// __multiversion__
+// copyright (c) Newb Shader
+
+#ifndef BYPASS_PIXEL_SHADER
+
+#if __VERSION__ >= 300
+	#ifdef MSAA_FRAMEBUFFER_ENABLED
+
+		centroid out vec2 uv0;
+		centroid out vec2 uv1;
+	#else
+
+		out vec2 uv0;
+		out vec2 uv1;
+
+	#endif
+
+	#define attribute in
+	#define varying out
+
+#else
+
+	varying vec2 uv0;
+	varying vec2 uv1;
+#endif
+
+	varying vec4 color;
+	varying vec4 mistColor;
+	varying lowp float shade;
+
+#ifdef SEASONS
+
+	varying vec3 sCol;
+
+#endif
+
+#ifdef FOG
+
+	varying float wPosY;
+	varying lowp vec4 wetRefl;
+
+#endif
+
+#if defined(BLEND) || defined(FAR_BLEND)
+
+	#define MAYBE_WATER
+	varying lowp float water;
+
+#endif
+
+#endif	// !BYPASS_PIXEL_SHADER
+
+#include "uniformWorldConstants.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformShaderConstants.h"
+#include "uniformRenderChunkConstants.h"
+
+#include "utilities/detectors.glsl"
+#include "config_utilities/sky.h"
+#include "utilities/noise.glsl"
+#include "config_utilities/mist_fog.h"
+#include "config_utilities/clouds.h"
+
+#include "config_utilities/global.h"
+#include "config_utilities/terrain.h"
+
+uniform highp float TOTAL_REAL_WORLD_TIME;
+
+attribute POS4 POSITION;
+attribute vec4 COLOR;
+attribute vec2 TEXCOORD_0;
+attribute vec2 TEXCOORD_1;
+
+const float rd = 1.57079; // pi by 2
+const float shadowIntensity = 1.0-shadow_intensity;
+
+// bool between function
+bool is(float val,float val1,float val2){
+	return (val>val1 && val<val2);
+}
+
+// water transparency
+float getWaterAlpha(vec3 color){
+	// swamp, fresh 
+	float tint = color.r;
+	vec2 values = vec2(0.9,water_transparency);
+
+	if(tint < 0.5){ return mix(values.x,values.y,tint*2.0); }
+	else{ return values.y; }
+}
+
+// simpler rand for disp,wetmap
+float fastRand(vec2 n){ 
+	float a = cos( dot(n,vec2(4.2683,1.367)) );
+	float b = dot( n,vec2(1.367,4.683) );
+	return fract(a+b);
+}
+
+// water displacement map (also used by caustic)
+float disp(vec3 pos, highp float t, bool chunkBorder){
+	if(chunkBorder){
+		return 0.5 + sin(t + (pos.x+pos.z)*rd )*0.5;
+	}
+	else{
+		float val = 0.5 + 0.5*sin(t*1.7+((pos.x+pos.y)*rd));
+		return mix(fastRand(pos.xz),fastRand(pos.xz+vec2(1.0)),val);
+	}
+}
+
+// sky reflection on plane - used by water, wet reflection
+vec3 getSkyRefl(vec3 horizonEdge, vec3 horizon, vec3 zenith, float y, float h){
+
+	// offset the reflection based on height from camera
+	float offset = h/(50.0+h); 	// (h*0.02)/(1.0+h*0.02)
+	y = max((y-offset)/(1.0-offset),0.0);
+
+	return renderSky(horizonEdge, horizon, zenith, y);
+}
+
+// fresnel - Schlick's approximation
+float calculateFresnel(float cosR, float r0){
+	float a = 1.0-cosR;
+
+	float a5 = a*a;
+	a5 *= a5*a;
+
+	return r0 + (1.0-r0)*a5;
+}
+
+void main()
+{
+	POS4 worldPos;
+	POS4 pos;
+
+// pos will be applied to gl_Position after wave code
+
+#ifdef AS_ENTITY_RENDERER
+
+	pos = WORLDVIEWPROJ * POSITION;
+	worldPos = pos;
+
+#else
+
+	// World position is calculated here and can get huge
+	worldPos.xyz = ((POSITION.xyz) * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
+	worldPos.w = 1.0;
+	// pos will be calculated after wave code
+
+#endif
+
+	vec3 wPos = worldPos.xyz;
+	vec3 cPos = POSITION.xyz;
+
+// I have no idea why BYPASS_PIXEL_SHADER exists
+
+#ifndef BYPASS_PIXEL_SHADER
+
+	uv0 = TEXCOORD_0;
+	uv1 = TEXCOORD_1;
+	color = COLOR;
+
+	vec2 lit = uv1*uv1;
+
+	bool isColored = (color.g > min(color.r,color.b)) || !(color.r==color.g && color.r==color.b);
+	//bool isColored = max(color.r,max(color.g,color.b)) > min(color.r,min(color.g,color.b));
+	//bool isColored = dot(abs(color.rgb-color.rrr),vec3(1.0))>0.0;
+
+	bool chunkBorder = (fract(cPos.x*0.0625)*fract(cPos.z*0.0625) == 0.0);
+
+	shade = color.g;
+	if(isColored){shade *= 1.5;}
+
+	// environment detections
+	bool end = detectEnd();
+	bool nether = detectNether();
+
+	#ifdef FOG
+
+		bool underWater = detectUnderwater();
+		float rainFactor = detectRain(underWater);
+
+	#else
+
+		bool underWater = false;
+		float rainFactor = 0.0;
+
+	#endif
+
+	// block type
+
+	#ifdef MAYBE_WATER
+
+		bool isWater = COLOR.b<0.02;
+		water = float(isWater);
+
+	#else
+
+		bool isWater = false;
+
+	#endif
+
+	// sky colors
+	vec3 zenithCol = getZenithCol(rainFactor);
+	vec3 horizonCol = getHorizonCol(rainFactor);
+	vec3 horizonEdgeCol = getHorizonEdgeCol(horizonCol,rainFactor);
+	if(underWater){
+		vec3 fogcol = getUnderwaterCol();
+		zenithCol = fogcol;
+		horizonCol = fogcol;
+		horizonEdgeCol = fogcol;
+	}
+
+
+/// time
+
+#ifdef USE_REAL_WORLD_TIME
+
+	// in seconds, resets to 0 every hour (3600 = 1 hour)
+	// we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
+	// this is bad because this will cause time to reverse after 1800
+	highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
+
+#else
+
+	highp float t = TIME;
+
+#endif
+
+// convert color space to linear-space for color correction (not entirely accurate)
+// and tree leaves, slab lighting fix
+
+#ifdef SEASONS
+
+	// season tree leaves are colored in fragment using sCol values
+	sCol = COLOR.rgb;
+	color.rgb = vec3(1.0);
+
+	uv1.y *= 1.0015;
+
+#else
+
+	if(isColored){color.rgb *= color.rgb*1.2;}
+
+	if(color.a == 0.0 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.0015;}
+
+#endif
+
+
+// Lighting (a bit complicated)
+// all of these will be multiplied by tex uv1 in frag so functions should be divided by uv1 here
+
+vec3 light;
+vec3 torchLight = torch_color*((torch_intensity*uv1.x)/(1.0-0.9*lit.x));
+
+#ifdef BLINKING_TORCH
+	torchLight *= 1.0 - 0.1*noise1D(t*2.5);
+#endif
+
+if(!nether && !end){
+	// overworld lighting
+
+	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + 1.5*rainFactor),1.0);
+	float nightFactor = 1.0-dayFactor;
+	float lightIntensity = sun_intensity*(1.0 - rainFactor*FOG_COLOR.g)*(1.0 + night_brightness*nightFactor);
+
+	// min ambient in caves
+	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y)*(1.0-uv1.y));
+
+	// sky ambient
+	light += mix(horizonCol,zenithCol,uv1.y)*(uv1.y*(2.0-lit.y)*(1.0+4.0*nightFactor));
+
+	// shadow from top light
+	float shadow = float(uv1.y > 0.876);
+
+	#ifdef REMOVE_OLD_SHADOW
+		if(uv1.y < 0.876 && uv1.x>0.0){shadow = uv1.y;}
+	#endif
+
+	// make shadow a bit softer and more softer when raining
+	shadow += (0.2+0.3*rainFactor)*(1.0-shadow)*float(uv1.y > 0.85);
+
+	shadow = max(shadow,(shadowIntensity + (0.7*shadow_intensity*nightFactor))*lit.y);
+	shadow *= 0.8 + 0.2*float(shade>0.8);
+
+	// direct light from top
+	vec3 tintColor = sunLightTint(night_color,morning_color,day_color,dayFactor,rainFactor);
+	light += (shadow*lightIntensity*(1.0-uv1.x*nightFactor))*tintColor;
+
+	// extra ambient caused by direct light
+	light += (0.5*lightIntensity*shade*(lit.y-(0.78*lit.y*lit.y)))*tintColor;
+
+	// torch light
+	light += torchLight*(1.0-(max(shadow,0.6*lit.y)*dayFactor));
+}
+else{
+	// nether & end lighting
+
+	// ambient
+	if(end){
+		light = vec3(1.1,0.7,1.3)*1.8;
+	}else{
+		light = vec3(1.1,0.8,0.7)*1.5;
+	}
+
+	// torch light
+	light += torchLight*1.1;
+}
+
+// darken at crevices
+light *= 0.8+0.2*float(COLOR.g>0.35);
+
+
+lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
+
+#ifdef ALPHA_TEST
+
+	vec3 bPos = fract(cPos.xyz);
+
+	// texture space - (64x32) textures in uv0.xy (textures after first 16 rows of uv0.y are black?)
+	vec2 texMap = uv0*vec2(64.0,32.0);
+	vec2 texNo = ceil(texMap);
+	float texPosY = fract(texMap.y);
+
+	#ifdef PLANTS_WAVE
+
+	#ifdef SEASONS
+
+		bool shouldWave = true;
+
+	#else
+
+	bool isTop = texPosY < 0.5 || (texNo.y==6.0 && (texNo.x==12.0||texNo.x==13.0));
+	bool isTreeLeaves = COLOR.a==0.0 && max(COLOR.g,COLOR.r)>0.37;
+	bool isPlants = (COLOR.r/COLOR.g<1.9);
+	bool isVines = bPos.y==0.0 && (bPos.x==0.046875 || is(bPos.z,0.0468,0.06) || bPos.x==0.953125 || bPos.z==0.953125);
+	bool isFarmPlant = (bPos.y==0.9375) && any( equal(bPos.xzxz,vec4(0.25,0.25,0.75,0.75)) ); 
+	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
+
+	// darken plants bottom - better to not move it elsewhere
+	light *= 1.05 - 0.35*float(isFarmPlant && !isTop);
+	light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop && isColored && !isTreeLeaves && texNo.y==13.0);
+
+	#ifdef EXTRA_PLANTS_WAVE
+
+		// bamboo pot plant leaves
+		shouldWave = shouldWave || ( (bPos.y==0.0 || bPos.y==0.125) && bPos.z==0.5 && bPos.x==0.9375);
+
+		// spore blossom petal
+		shouldWave = shouldWave || ( (bPos.x==0.5 || bPos.z==0.5) && bPos.y==0.46875);
+
+			shouldWave = shouldWave || ( (
+			(texNo.y==5.0 && texNo.x>61.9 ) ||		// long bush bottom 1
+			(texNo.y==6.0 && texNo.x<5.1 ) ||		// long bush bottom 2
+			(texNo.y==10.0 && texNo.x>46.9 ) ||		// flowers
+			(texNo.y==11.0 && is(texNo.x,19.9,27.1) ) ||	// tree shurbs
+			(texNo.y==13.0 && is(texNo.x,29.0,40.0) ) ||	// berry bush
+			(texNo.y==14.0 && (texNo.x==48.0 || texNo.x==28.0) )	// wither rose & dandelion
+		) && isTop) || (
+			(texNo.y==6.0 && is(texNo.x,4.9,11.1) ) ||	// long bushes top
+			(texNo==vec2(32.0,13.0))	// sunflower green pad
+		);
+
+	#endif
+
+	#endif
+
+	if(shouldWave && distanceThreshold<45.0){
+
+		// values must be a multiple of pi/4
+		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
+
+		float amplitude = wave_amplitude;
+		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
+
+		#ifdef SEASONS
+
+			amplitude *= 0.5;
+
+		#else
+
+			amplitude *= 1.0 - 0.5*float(isTreeLeaves);
+
+			// vines
+			amplitude *= 1.0 - (0.6 + 0.3*float(isTop))*float(isVines);
+
+		#endif
+		float wave = 1.0+mix(
+			sin(t*wave_speed*(1.0-0.5*float(underWater)) + phaseDiff),
+			sin(t*wave_speed*1.5 + phaseDiff),
+			rainFactor);
+		wave *= amplitude*uv1.y;
+
+		// wave the bottom of plants in opposite direction to make it look fixed
+		if(isPlants && isColored && !isTop){wave *= (bPos.y-1.0)*float(bPos.y>0.0);}
+
+		worldPos.y -= wave*wave*0.5;
+		worldPos.xz -= vec2(wave);
+
+	}
+
+	#endif	//PLANTS_WAVE
+
+	#ifdef LANTERN_WAVE
+
+		bool isLantern = ((bPos.y==0.6875 || bPos.y==0.5625) && (bPos.x==0.375 || bPos.x==0.625) ) || ( (bPos.y==0.5625 || bPos.y==0.125) && (bPos.x==0.3125 || bPos.x==0.6875) );
+		bool isChain = (bPos.x==0.4375 || bPos.x==0.5625) && (bPos.y==0.6875);
+
+		// fix for non-hanging lanterns waving top part (works only if texPosY is correct)
+		if( texPosY<0.3 || is(texPosY,0.67,0.69) || is(texPosY,0.55,0.6) ){
+			isLantern = isLantern && (bPos.y != 0.5625);
+		}
+
+		// X,Z axis rotation
+		if( (isChain||isLantern) && uv1.x>0.6){
+			float offset = dot(floor(cPos),vec3(0.3927));
+
+			// simple random wave for angle
+			vec2 theta = vec2(
+				mix(sin(t + offset),1.7*sin(t*1.4 + offset),rainFactor),
+				mix(sin(t + offset +0.7),1.7*sin(t*1.4 + offset +0.7),rainFactor)
+			)*lantern_swing_intensity*lit.y*noise1D(t*0.15);
+
+			float sinA = sin(theta.x);
+			float cosA = cos(theta.x);
+			float sinB = sin(theta.y);
+			float cosB = cos(theta.y);
+
+			vec3 pivotPos = vec3(0.5,1.0,0.5)-bPos;
+
+			worldPos.x += pivotPos.x*(1.0-cosA) - pivotPos.y*sinA;
+			worldPos.y += pivotPos.y*(1.0-cosA*cosB) + pivotPos.x*sinA*cosB + pivotPos.z*sinB;
+			worldPos.z += pivotPos.z*(1.0-cosB) - pivotPos.y*cosA*sinB + pivotPos.x*sinA*sinB;
+		}
+
+	#endif //LANTERN_WAVE
+
+#else
+
+	#ifdef PLANTS_WAVE
+
+	// for non-fancy and jungle leaves
+	if(color.a==0.0 && max(COLOR.g,COLOR.r)>0.37 && distanceThreshold<45.0){
+		/// values must be a multiple of pi/4
+		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
+
+		float amplitude = wave_amplitude*0.4;
+		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
+
+		float wave = 1.0+sin(t*wave_speed + phaseDiff);
+		wave *= amplitude*uv1.y;
+
+		worldPos.y -= wave*wave*0.5;
+		worldPos.xz -= vec2(wave);
+	}
+
+	#endif
+
+	#if defined(MAYBE_WATER) && defined(WATER_WAVE)
+
+		if(isWater && distanceThreshold < 35.0){
+			worldPos.y += 0.002;
+			worldPos.xy += vec2(0.02,min(0.3*fract(cPos.y),0.03))*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
+		}
+
+	#endif
+
+#endif // ALPHA_TEST
+
+#endif //!BYPASS_PIXEL_SHADER
+
+
+// set vertex positions
+
+#ifndef AS_ENTITY_RENDERER
+
+	// Transform to view space before projection instead of all at once to avoid floating point errors
+	// Not required for entities because they are already offset by camera translation before rendering
+	pos = WORLDVIEW * worldPos;
+	pos = PROJ * pos;
+
+#endif
+
+	gl_Position = pos;
+
+
+#ifndef BYPASS_PIXEL_SHADER
+
+
+// distance from the camera (used by mist, fog, water)
+#ifdef FANCY
+
+	float camDist = length(wPos.xyz);
+
+#else
+
+	float camDist = pos.x/(1.0+pos.z);
+	camDist = (1.0 + camDist*camDist)*pos.z;
+
+#endif
+
+float relativeDist = camDist / RENDER_DISTANCE;
+
+
+// fade out blended water layer to opaque layer
+
+#ifdef BLEND
+
+	//Mega hack: only things that become opaque are allowed to have vertex-driven transparency in the Blended layer...
+	//to fix this we'd need to find more space for a flag in the vertex format. color.a is the only unused part
+	bool becomeOpaqueInDistance = color.a < 0.95;
+	if(becomeOpaqueInDistance) {
+
+		#ifdef FANCY
+
+			float alphaFadeOut = clamp(camDist / FAR_CHUNKS_DISTANCE, 0.0, 1.0);
+			color.a = mix(getWaterAlpha(COLOR.rgb)-float(underWater)*0.3, 1.0, alphaFadeOut);
+
+		#else
+
+			color.a = 1.0;
+
+		#endif
+	}
+
+#endif
+
+
+// mist (also used in underwater to decrease visibility)
+mistColor = renderMist(horizonEdgeCol, relativeDist, lit.x, rainFactor, nether,underWater,end);
+
+if(!nether && !underWater){
+	mistColor.rgb *= max(0.75,uv1.y);
+	mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
+}
+
+#if defined(FOG) || defined(BLEND)
+
+// used by water and wet effect
+vec3 viewDir = normalize(-wPos.xyz);
+
+#ifdef MAYBE_WATER
+
+if(isWater){  
+	// this is used for finding the type of plane
+	float fractCposY = fract(cPos.y);
+
+	// get water color (r-tint,g-lightness)
+	vec3 transmission = fresh_water_color;
+	if(COLOR.r < 0.5){ transmission = mix(marshy_water_color,transmission,COLOR.r*2.0);}
+	else{ transmission = mix(transmission,sea_water_color,(COLOR.r*2.0)-1.0);}
+	transmission *= COLOR.g;
+
+	// this gives the water its color
+	transmission *= (0.25 + FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor)*light;
+	transmission *= max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2);
+
+	float cosR;
+	vec3 waterRefl;
+
+	// reflection
+
+	// for top plane
+	if( fractCposY > 0.0 ){
+
+		// calculate cosine of incidence angle and apply water bump
+		float bump = water_bump*disp(cPos.xyz,t,chunkBorder);
+		cosR = abs(viewDir.y);
+		cosR = mix(cosR,(1.0-cosR*cosR),bump);
+
+		// sky reflection
+		waterRefl = getSkyRefl(horizonEdgeCol,horizonCol,zenithCol,cosR,-wPos.y);
+
+		// sunrise/sunset reflection
+		float sunRefl = clamp((abs(viewDir.x)-0.9)/0.099,0.0,1.0);
+		sunRefl *= sunRefl*sunRefl;
+		sunRefl *= sunRefl;
+		sunRefl *= pow(FOG_COLOR.r/sqrt(dot(FOG_COLOR.rgb,FOG_COLOR.rgb)),8.0);
+		waterRefl += 2.5*horizonEdgeCol*sunRefl;
+
+		// cloud reflection
+
+		#if defined(FANCY) && defined(CLOUD_REFLECTION)
+
+			vec2 parallax = viewDir.xz/viewDir.y;
+			vec2 projectedPos = (0.7*wPos.xz*cloud_size) - parallax;
+
+			float fade = 0.1*length(projectedPos);
+			fade = (1.0 - clamp((fade-0.5)*2.0,0.0,1.0))*float(wPos.y<0.0);
+
+			projectedPos += ((1.0-fade) - bump)*parallax;
+
+			float renderedClouds = cloudNoise2D(projectedPos,t,rainFactor);
+
+			vec3 cloudColor = waterRefl.ggg+mix(vec3(1.0,0.5,0.2),vec3(1.0),FOG_COLOR.g*1.1)*FOG_COLOR.g;
+			cloudColor = mix(cloudColor,vec3(2.1)*FOG_COLOR.g,rainFactor);
+
+			waterRefl = mix(waterRefl,cloudColor,renderedClouds*fade*0.9);
+
+		#endif
+
+		// sky,cloud reflection mask
+		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
+
+		//float isFreshWater = max((0.4-abs(COLOR.g-0.5))*2.5,0.0);
+		//float obstacle = 0.13*(0.5+0.5*sin(viewDir.x*8.0)*sin(viewDir.z*8.0));
+		//waterRefl *= vec3(0.4+0.6*smoothstep(obstacle,0.1+obstacle,max(viewDir.y,0.0)));
+
+		// ambient,torch light reflection
+		waterRefl += vec3(0.02*(1.0-uv1.y)) + torch_color*torch_intensity*(0.6*float(uv1.x>0.83) + lit.x*bump*10.0);
+
+		// flat plane
+		if( is(fractCposY,0.8,0.9) ){ waterRefl *= 1.0 - 0.66*clamp(wPos.y,0.0,1.0); }
+
+		// slanted plane and highly slanted plane
+		else{ waterRefl *= (0.4+0.1*sin(t*2.0+cPos.y*12.566)) - 0.2*float(fractCposY > 0.9); }
+	}
+
+	// for side plane
+	else{
+		cosR = max(dot(viewDir,normalize(vec3(viewDir.x,0.0,viewDir.z))),float(wPos.y<1.0));
+		cosR += water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
+
+		waterRefl = zenithCol*(lit.y*1.3);
+	}
+
+	float fresnel = calculateFresnel(min(cosR,1.0),0.03);
+
+	#ifdef USE_ANGLE_BLEND_FADE
+
+		color.a = getWaterAlpha(COLOR.rgb);
+		color.a += (1.0-cosR)*(1.0-color.a);
+
+	#else
+
+		color.a = min(color.a + (fresnel*0.6),1.0);
+		//color.a = color.a + (1.0-color.a)*fresnel;
+
+	#endif
+
+	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel;
+
+}	//isWater
+
+#endif // MAYBE_WATER
+
+#endif // defined(FOG) || defined(BLEND)
+
+
+#ifdef FOG
+
+// when raining or underwater, all chunks define FOG
+
+#ifdef UNDERWATER
+
+	// top waving refraction
+	if(uv1.y > 0.93){
+		float intensity = clamp(wPos.y/8.0, 0.0, 20.0);
+		gl_Position.xy += vec2(intensity*0.15*sin(t*2.0 + dot(wPos.xyz,vec3(0.1)) + dot(cPos.xyz,vec3(rd)) ));
+	}
+
+	#ifdef UNDERWATER_WAVE
+
+		//gl_Position.xy += vec2(min(0.008*pos.z,1.0)*sin(t*1.1 + dot(pos.xyz,vec3(2.0,2.0,0.01))));
+		gl_Position.xy += vec2(min(0.008*pos.z,1.0)*sin(t*1.1 + dot(cPos.xyz,vec3(rd))));
+
+	#endif
+
+	// soft caustic effect
+	if(uv1.y < 0.9){
+		vec3 underWaterColor = mix(underwater_color,vec3(1.0),lit.y*0.7);
+
+		light = underWaterColor*((light*1.3)+vec3(underwater_brightness));
+
+		float caustics = disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
+		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
+		//if(is(uv1.y,0.81,0.82) || is(uv1.y,0.68,0.69) || is(uv1.y,0.56,0.57) || is(uv1.y,0.43,0.44) || is(uv1.y,0.31,0.32)){light.rgb=vec3(1.0,0.0,0.0);}
+		caustics *= 1.6 + 1.6*float( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32));
+
+		light += caustics*underWaterColor*(0.1+lit.y+(lit.x*0.7))*caustic_intensity;
+
+		// use mist to decrease visibility
+		mistColor.rgb = (1.0+lit.y*0.6)*mix(mistColor.rgb,torch_color*torch_intensity*underwater_color,lit.x);
+		mistColor.a += (1.0-mistColor.a)*dot(lit,vec2(0.2));
+	}
+
+#endif //UNDERWATER
+
+
+// out wPos.y for Y-normal calculation in fragment shader
+wPosY = wPos.y;
+
+
+// to remove fog in heights (also rain mist)
+float fogGradient = 1.0-max(-viewDir.y+0.1,0.0);
+fogGradient = 1.0-fogGradient*fogGradient*fogGradient;
+
+
+// rain effects
+if(rainFactor > 0.0){
+
+	mistColor.a *= 1.0-rainFactor*fogGradient;
+
+	// humid air blow
+	float humidAir = clamp(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0,1.0);
+	humidAir *= rainFactor*lit.y*lit.y;
+	mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
+	mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
+
+	// wet effect
+	float endDist = RENDER_DISTANCE*0.6;
+
+	if(!isWater &&  camDist < endDist ){
+
+		// puddles map
+		float wetness;
+		if(chunkBorder){ wetness = max(0.5+0.5*sin((cPos.x+cPos.z)*rd),0.6);}
+		else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
+		wetness *= lit.y*lit.y;
+		color.rgb *= 1.0-0.5*wetness*rainFactor;
+
+		// cosine of incidence angle
+		float cosR = max(viewDir.y,float(wPos.y > 0.0));
+
+		wetRefl.rgb = getSkyRefl(horizonEdgeCol,horizonCol,zenithCol,cosR,-wPos.y);
+		wetRefl.a = calculateFresnel(cosR,0.03)*rainFactor*wetness;
+
+		// extra
+		float streaks = viewDir.x/sqrt(dot(viewDir.xz,viewDir.xz));
+		streaks = sin(streaks*7.0);
+		streaks *= streaks;
+
+		wetRefl.rgb *= 1.0+(streaks*float(uv1.y<0.88));
+		wetRefl.rgb += 0.9*torchLight*streaks;
+
+		// hide effect far from player
+		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );
+	}
+	else{
+		wetRefl.a = 0.0;
+	}
+
+}
+else{
+	wetRefl.a = 0.0;
+}
+
+	// fog
+
+	// loading chunks
+
+	#ifdef ALLOW_FADE
+
+		relativeDist += RENDER_CHUNK_FOG_ALPHA;
+
+	#endif
+
+	vec4 fogColor = renderFog(horizonEdgeCol, relativeDist, nether);
+
+	if(nether){
+		fogColor.rgb = mix(fogColor.rgb,vec3(0.8,0.2,0.12)*1.5,lit.x*(1.67-fogColor.a*1.67));
+	}
+	else{
+		if(end){fogColor.rgb = vec3(0.16,0.06,0.2);}
+		if(!underWater){fogColor.a *= 1.0-fogGradient;}
+	}
+
+	// mix fog with mist (need to do this in a proper and efficient way)
+	mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
+	mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
+
+#endif // FOG
+
+
+// Fake refraction and caustics (i know it's glitchy and useless)
+#if !defined(UNDERWATER) && defined(WATER_REFRACTION)
+
+if(is(uv1.y,0.0,0.8127) && wPos.y<-2.0){
+	// soft caustic effect
+	float caustics = 2.0*disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
+	caustics += 0.4+0.4*sin(t + (cPos.x + cPos.z)*rd);
+
+	light += FOG_COLOR.g*caustics*caustics*lit.y*vec3(uv1.y*1.9,uv1.y*3.2,3.1);
+
+	float intensity = min(0.05,uv1.y*dot(abs(wPos.xyz),vec3(0.006)));
+	gl_Position.xy += vec2(intensity*sin(t+dot(wPos.xyz,vec3(1.8))));
+}
+
+#endif
+// apply light to color
+
+#ifdef MAYBE_WATER
+
+	if(!isWater){ color.rgb *= light; }
+
+#else
+
+	color.rgb *= light;
+
+#endif
+
+
+//color.rgb *= float(!(uv1.x<0.08 && uv1.x>0.05));
+//color.rgb = wPos.xyz;
+
+/*
+// less precise normal
+vec3 nrmlow = vec3(0.0);
+nrmlow.y = -float(shade>0.9);
+nrmlow.z = float(shade>0.75 && shade<0.9);
+nrmlow.x = float(shade>0.4 && shade<0.75);
+nrmlow *= sign(wPos);
+#ifdef ALPHA_TEST
+nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);#endif
+*/
+
+//color.rgb = uv1.yyy;
+
+
+#ifdef GOD_RAYS
+
+// needs more optimization
+// offset wPos (only works upto 16 blocks)
+
+vec3 offset = cPos.xyz-(16.0*fract(wPos.xyz*0.0625));
+vec3 d1 = max(offset,0.0);
+vec3 d2 = max(-offset,0.0);
+offset = max((16.0-d2)*sign(d2),d1);
+offset = abs(offset-8.0)*0.125;
+offset = offset*offset*(3.0-2.0*offset);
+
+vec3 ofPos = (wPos.xyz+offset);
+vec3 nrmof = normalize(wPos);
+
+float u = nrmof.z/sqrt(dot(nrmof.zy,nrmof.zy));
+
+float diff = 0.1*offset.x + 0.2*offset.y + offset.z + 0.07*t;
+float mask = nrmof.x*nrmof.x;
+
+float vol = sin(7.0*u + 1.5*diff)*sin(3.0*u + diff);
+vol += sin(5.0*u + 0.4*diff)*sin(4.0*u + 0.7*diff);
+vol *= vol*mask*uv1.y;
+vol *= min(7.0*relativeDist*(1.0-mask),1.0);
+vol *= clamp(3.0*(FOG_COLOR.r-FOG_COLOR.b),0.0,1.0);
+
+mistColor.a = min(mistColor.a + 0.3*vol,1.0);
+#endif
+
+#endif	//!BYPASS_PIXEL_SHADER
+
+}

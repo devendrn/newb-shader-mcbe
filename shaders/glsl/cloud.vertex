@@ -1,0 +1,75 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+// copyright © Newb Shader
+
+#include "vertexVersionSimple.h"
+
+#include "uniformWorldConstants.h"
+#include "uniformPerFrameConstants.h"
+#include "uniformShaderConstants.h"
+
+#include "utilities/noise.glsl"
+#include "utilities/detectors.glsl"
+#include "config_utilities/clouds.h"
+
+#include "config_utilities/global.h"
+
+uniform highp float TOTAL_REAL_WORLD_TIME;
+
+attribute mediump vec4 POSITION;
+
+varying vec4 color;
+
+void main()
+{
+
+    //// smooth clouds
+
+    POS4 worldPos = WORLD * POSITION;
+
+    // Displaces the cloud plane to look more spherical
+    vec4 newPos = POSITION;
+    newPos.y *= 0.1;
+    float len = length(worldPos.xz)*0.004;
+    newPos.y -= len*len*sign(worldPos.y);
+
+    POS4 pos = WORLDVIEWPROJ * newPos;
+
+ 	gl_Position = pos;
+
+    //// time
+    #ifdef USE_REAL_WORLD_TIME
+        // in seconds, resets to 0 every hour (3600 = 1 hour)
+        // we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
+        highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
+    #else
+        highp float t = TIME;
+    #endif
+
+    float rain = detectRain(false);
+    
+    // POSITION - blocky movement - but gives a more static uv
+    //vec2 cloudUV = POSITION.xz*20.0;
+
+ 	color = vec4(CURRENT_COLOR.rgb,1.0);
+    color = renderClouds(color, worldPos.xz*cloud_size, t, rain);
+    color.rgb = mix(color.rgb,color.ggg*FOG_COLOR.g*3.5,rain*0.8);
+
+    // cloud depth
+    gl_Position.y += color.a*10.0;
+
+	color.a *= cloud_alpha;
+
+	#ifdef ENABLE_AURORA
+		vec4 auroras = renderAurora(0.05*worldPos.xz,t,rain);
+		auroras *= max(1.0-(1.7*color.a),0.0);
+		auroras *= 1.0-min(4.5*max(FOG_COLOR.r,FOG_COLOR.b),1.0);
+
+		color += auroras;
+	#endif
+
+    // fade out cloud layer
+    float depth = length(worldPos.xyz)*0.002;
+    float fade = 1.0 - clamp((depth-0.5)*2.0,0.0,1.0);    color.a *= fade;
+
+}

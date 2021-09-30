@@ -1,0 +1,32 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+// copyright © Newb Shader
+
+#include "vertexVersionCentroidUV.h"
+
+#include "uniformWorldConstants.h"
+
+#include "config_utilities/extra.h"
+
+#ifdef ROTATE_SUNMOON
+    const float angle = ROTATE_SUNMOON*0.0174533;
+    const float sinA = sin(angle);
+    const float cosA = cos(angle);
+    const mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
+#endif
+
+attribute POS4 POSITION;
+attribute vec2 TEXCOORD_0;
+
+void main()
+{
+    POS4 pos = POSITION;
+
+    #ifdef ROTATE_SUNMOON
+        pos.xz = rotate*pos.xz;
+    #endif
+
+    gl_Position = WORLDVIEWPROJ * pos;
+
+    uv = TEXCOORD_0;
+}

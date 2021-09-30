@@ -1,0 +1,56 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+// copyright © Newb Shader
+
+#if __VERSION__ >= 300
+    #define attribute in
+    #define varying out
+#endif
+
+#include "uniformWorldConstants.h"
+
+uniform vec4 CURRENT_COLOR;
+uniform vec4 FOG_COLOR;
+uniform vec2 FOG_CONTROL;
+uniform float RENDER_DISTANCE;
+
+#include "utilities/detectors.glsl"
+#include "config_utilities/sky.h"
+
+attribute mediump vec4 POSITION;
+attribute vec4 COLOR;
+
+varying vec3 zenith_color;
+varying vec3 horizon_color;
+varying vec3 horizon_edge_color;
+varying vec3 wPos;
+
+void main()
+{
+vec4 pos = POSITION;
+pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
+gl_Position = WORLDVIEWPROJ * pos;
+
+//wPos = (WORLD * pos).xyz;
+wPos = pos.xyz;
+wPos.y += 0.148;
+
+// detections
+bool underWater = detectUnderwater();
+float rainFactor = detectRain(underWater);
+
+// sky colors
+zenith_color = getZenithCol(rainFactor);
+horizon_color = getHorizonCol(rainFactor);
+horizon_edge_color = getHorizonEdgeCol(horizon_color,rainFactor);
+
+// underwater sky
+if(underWater){
+    vec3 fogcol = getUnderwaterCol();
+    zenith_color = fogcol;
+    horizon_color = fogcol;
+    horizon_edge_color = fogcol;
+    //zenith_color,horizon_color,horizon_edge_color = getUnderwaterCol();
+}
+
+}

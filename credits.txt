@@ -1,0 +1,21 @@
+*Newb Shader v1.1.8*
+
+Copyrighted with MIT license
+
+You are allowed to use, copy, modify or merge the codes without violating the license
+
+===============================================================================
+
+Official post: https://mcpedl.com/newb-shader/
+Creator: Devendran (discord: VeteranDev#2969)
+
+===============================================================================
+
+Bug fix/suggestions/ideas: (users who helped me successfully debug some bugs or gave suggestions/ideas which are now implemented)
+  - Bravo6,HendricK sHaDoW,TatsuyaHikki,ggVictor,GroundBeefmc,Dhiika
+
+Discord Server mention: (servers which were helpful for me)
+  - YamaRin's Basement
+        It's a great community with many friendly shader devs!
+
+===============================================================================

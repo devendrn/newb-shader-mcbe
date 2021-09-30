@@ -1,0 +1,249 @@
+// __multiversion__
+// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
+// Newb Shader
+
+#include "vertexVersionCentroidUV.h"
+
+#include "uniformWorldConstants.h"
+#include "uniformEntityConstants.h"
+#include "uniformPerFrameConstants.h"
+
+#include "utilities/detectors.glsl"
+#include "config_utilities/sky.h"
+#include "config_utilities/mist_fog.h"
+
+#include "config_utilities/global.h"
+
+#ifdef USE_SKINNING
+#include "uniformAnimationConstants.h"
+#endif
+
+#line 13
+
+attribute mediump vec4 POSITION;
+attribute vec2 TEXCOORD_0;
+attribute vec4 NORMAL;
+
+#if defined(USE_SKINNING)
+
+#ifdef MCPE_PLATFORM_NX
+    attribute uint BONEID_0;
+#else
+    attribute float BONEID_0;
+#endif
+
+    varying lowp vec3 oPos1;
+    varying lowp vec3 oPos2;
+#endif
+
+#ifdef COLOR_BASED
+	attribute vec4 COLOR;
+	varying vec4 vertColor;
+#endif
+
+varying vec4 light;
+varying vec4 mistColor;
+varying lowp vec4 wetRefl;
+
+varying float rainFactor;
+
+#ifdef USE_OVERLAY
+	// When drawing horses on specific android devices, overlay color ends up being garbage data.
+	// Changing overlay color to high precision appears to fix the issue on devices tested
+	varying highp vec4 overlayColor;
+#endif
+
+#ifdef TINTED_ALPHA_TEST
+	varying float alphaTestMultiplier;
+#endif
+
+#ifdef GLINT
+	varying vec2 layer1UV;
+	varying vec2 layer2UV;
+	varying vec4 tileLightColor;
+	varying vec4 glintColor;
+#endif
+
+const float AMBIENT = 0.45;
+
+const float XFAC = -0.1;
+const float ZFAC = 0.1;
+
+float lightIntensity(vec4 position, vec4 normal) {
+#ifdef FANCY
+	vec3 N = normalize( WORLD * normal ).xyz;
+
+	N.y *= TILE_LIGHT_COLOR.w; //TILE_LIGHT_COLOR.w contains the direction of the light
+
+	//take care of double sided polygons on materials without culling
+	#ifdef FLIP_BACKFACES
+		vec3 viewDir = normalize((WORLD * position).xyz);
+        N *= -sign(dot(N, viewDir));
+	#endif
+
+    N.xz *= N.xz;
+
+    float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
+
+    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.2;
+
+    return light*light*lit;
+
+#else
+    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.2;
+	return lit*(0.7+abs(NORMAL.y)*0.3)*(0.9+abs(NORMAL.x)*0.1);
+
+#endif
+}
+
+#ifdef GLINT
+vec2 calculateLayerUV(float offset, float rotation) {
+	vec2 uv = TEXCOORD_0;
+	uv -= 0.5;
+	float rsin = sin(rotation);
+	float rcos = cos(rotation);
+	uv = mat2(rcos, -rsin, rsin, rcos) * uv;
+	uv.x += offset;
+	uv += 0.5;
+
+	return uv * GLINT_UV_SCALE;
+}
+#endif
+
+void main()
+{
+	POS4 entitySpacePosition;
+	POS4 entitySpaceNormal;
+
+#ifdef USE_SKINNING
+	#if defined(LARGE_VERTEX_SHADER_UNIFORMS)
+		entitySpacePosition = BONES[int(BONEID_0)] * POSITION;
+		entitySpaceNormal = BONES[int(BONEID_0)] * NORMAL;
+	#else
+		entitySpacePosition = BONE * POSITION;
+		entitySpaceNormal = BONE * NORMAL;
+	#endif
+#else
+	entitySpacePosition = POSITION * vec4(1, 1, 1, 1);
+	entitySpaceNormal = NORMAL * vec4(1, 1, 1, 0);
+#endif
+
+	POS4 pos = WORLDVIEWPROJ * entitySpacePosition;
+	gl_Position = pos;
+
+	float L = lightIntensity(entitySpacePosition, entitySpaceNormal);
+
+#ifdef USE_OVERLAY
+	L += OVERLAY_COLOR.a * 0.35;
+#endif
+
+#ifdef TINTED_ALPHA_TEST
+	alphaTestMultiplier = OVERLAY_COLOR.a;
+#endif
+
+	float factor = TILE_LIGHT_COLOR.b-TILE_LIGHT_COLOR.r;
+	light = vec4(L*vec3(1.0-2.8*factor,1.0-2.7*factor,1.0),1.0);
+	light.rgb *= vec3(1.0) + FOG_COLOR.rgb*0.3;
+
+#ifdef COLOR_BASED
+	vertColor = COLOR;
+#endif
+	
+#ifdef USE_OVERLAY
+	overlayColor = OVERLAY_COLOR;
+#endif
+
+#ifndef NO_TEXTURE
+	uv = TEXCOORD_0;
+#endif
+
+#ifdef USE_UV_ANIM
+	uv.xy = UV_ANIM.xy + (uv.xy * UV_ANIM.zw);
+#endif
+
+#ifdef GLINT
+	glintColor = GLINT_COLOR;
+	layer1UV = calculateLayerUV(UV_OFFSET.x, UV_ROTATION.x);
+	layer2UV = calculateLayerUV(UV_OFFSET.y, UV_ROTATION.y);
+	tileLightColor = TILE_LIGHT_COLOR;
+#endif
+
+#ifdef USE_SKINNING
+// don't do for small entities like item drops
+// relative position (needs more optimization)
+// some are incorrect - because POSITION is based on bone orgin not object orgin
+oPos1.x = float(POSITION.x<0.4);
+oPos1.y = float(POSITION.y<0.0);
+oPos1.z = float(POSITION.z<-0.1);
+
+oPos2.x = float(POSITION.x<0.0);
+oPos2.y = float(POSITION.y<0.9);
+oPos2.z = float(POSITION.z<-3.9);
+
+oPos1 = oPos1*2.0 - vec3(1.0);
+oPos2 = oPos2*2.0 - vec3(1.0);
+#endif
+
+// soft shadow
+light.rgb *= 1.05-0.3*float(POSITION.y>0.0);
+
+// detections
+bool end = detectEnd();
+bool nether = detectNether();
+bool underWater = detectUnderwater();
+rainFactor = detectRain(underWater);
+
+// horizon color
+vec3 newFog = getHorizonCol(rainFactor);
+newFog = getHorizonEdgeCol(newFog,rainFactor);
+if(underWater){newFog = getUnderwaterCol();}
+
+float camDist = pos.z/RENDER_DISTANCE;
+
+mistColor = renderMist(newFog, camDist, TILE_LIGHT_COLOR.x, rainFactor, nether,underWater,end);
+vec4 fogColor = renderFog(newFog, camDist, nether);
+
+// mix fog with mist (need to do this in a proper and efficient way)
+mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
+mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
+
+// nether,end,underwater tint
+if(nether){
+    light.rgb *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
+}
+if(end){ 
+    light.rgb *= vec3(2.1,1.5,2.3);
+    fogColor.rgb = vec3(0.16,0.06,0.2);
+}
+if(underWater){
+    light.rgb *= vec3(0.5,1.4,1.6);
+    highp float t = TIME;
+    float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
+    light.rgb += vec3(1.5,3.0,3.3)*caustic;
+}
+
+// wet effect
+if(rainFactor>0.0){
+
+    wetRefl.a = 0.0;
+    if(pos.z < 30.0){
+    vec3 wPos = (WORLD * entitySpacePosition).xyz;
+    vec3 nrm = normalize((WORLD * entitySpaceNormal).xyz);
+    if(nrm.y>0.0){
+        float viewDirY = wPos.y/sqrt(dot(wPos.xyz,wPos.xyz));
+        
+        float cosR = nrm.y*(1.0-abs(viewDirY));
+
+        float fresnel = cosR*cosR;
+        fresnel *= fresnel*cosR;
+
+        wetRefl.rgb = newFog;
+        wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
+    }
+    }
+
+}else{wetRefl.a = 0.0;}
+
+//light.rgb = TILE_LIGHT_COLOR.zzz;
+
+}

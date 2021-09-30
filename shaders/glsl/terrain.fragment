@@ -1,0 +1,169 @@
+// __multiversion__
+// copyright (c) Newb shader
+
+#include "fragmentVersionCentroid.h"
+
+#ifndef BYPASS_PIXEL_SHADER
+
+#if __VERSION__ >= 300
+	#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
+		_centroid in highp vec2 uv0;
+		_centroid in highp vec2 uv1;
+	#else
+		_centroid in vec2 uv0;
+		_centroid in vec2 uv1;
+	#endif
+#else
+	varying vec2 uv0;
+	varying vec2 uv1;
+#endif
+
+varying vec4 color;
+varying vec4 mistColor;
+
+varying lowp float shade;
+
+#ifdef SEASONS
+    varying vec3 sCol;
+#endif
+
+#ifdef FOG
+    varying float wPosY;
+    varying lowp vec4 wetRefl;
+
+// fast boolean normal for top surface (isY)
+bool isTopSurface(float y){
+
+    if(y<0.0){
+        // check for change in Y in frag block
+        return (dFdy(y) < 0.0001);
+    }
+    else{
+        return false;
+    }
+}
+
+#endif
+
+#if defined(BLEND) || defined(FAR_BLEND)
+    #define MAYBE_WATER
+    varying lowp float water;
+#endif
+
+#endif	// !BYPASS_PIXEL_SHADER
+
+#include "uniformShaderConstants.h"
+#include "util.h"
+
+#include "config_utilities/color.h"
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1;
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
+
+void main()
+{
+
+#ifdef BYPASS_PIXEL_SHADER
+	gl_FragColor = vec4(0, 0, 0, 0);
+	return;
+
+#else 
+
+#if USE_TEXEL_AA
+	vec4 diffuse = texture2D_AA(TEXTURE_0, uv0);
+#else
+	vec4 diffuse = texture2D(TEXTURE_0, uv0);
+#endif
+
+// we need textures in linear-space colors
+diffuse.rgb *= diffuse.rgb;
+
+#ifdef SEASONS_FAR
+	diffuse.a = 1.0;
+#endif
+
+// clip alpha
+#if USE_ALPHA_TEST
+	#ifdef ALPHA_TO_COVERAGE
+		if(diffuse.a < 0.05){ discard; }
+	#else
+		if(diffuse.a < 0.5){ discard; }
+	#endif
+#endif
+	
+vec4 inColor = color;
+
+// transparency
+#if defined(BLEND)
+	diffuse.a *= inColor.a;
+#endif
+
+
+// glowy ores
+if(diffuse.a<0.06 && diffuse.a>0.0){
+	inColor.rgb = max(inColor.rgb,vec3(1.5)+diffuse.rgb);
+}
+
+
+// day night tint
+#if !defined(ALWAYS_LIT)
+	vec3 tint = texture2D( TEXTURE_1, uv1).rgb;
+	tint = mix(tint.bbb,tint*tint,0.7+(0.3*uv1.y*uv1.y*uv1.y));
+	diffuse.rgb *= tint;
+#endif
+
+
+#ifndef SEASONS
+	#if !USE_ALPHA_TEST && !defined(BLEND)
+		diffuse.a = inColor.a;
+	#endif
+#else
+	// season tree leaves color
+	//diffuse.rgb *= texture2D( TEXTURE_2, sCol.rg).rgb*2.0;
+	diffuse.rgb *= mix(vec3(1.0), texture2D( TEXTURE_2, sCol.rg).rgb*2.0, sCol.b);
+
+	diffuse.rgb *= inColor.a;
+	diffuse.a = 1.0;
+#endif
+
+/// apply color and lighting
+#ifdef MAYBE_WATER
+    // ignore water texture and replace it with vertex calculated water
+    if(water>0.5){diffuse = inColor;}
+    else{ diffuse.rgb *= inColor.rgb; }
+#else
+    diffuse.rgb *= inColor.rgb;
+#endif
+
+// light glow
+float glow = uv1.x*uv1.x;
+glow *= glow*glow*glow*glow;
+diffuse.rgb *= 1.0 + glow*0.3;
+
+#ifdef FOG
+// wet effect
+if(wetRefl.a > 0.0){
+    // only on xz plane
+    if(isTopSurface(wPosY)){
+        float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
+        diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
+    }
+}
+#endif
+
+// mist,fog
+diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
+
+// color correction
+diffuse.rgb = colorCorrection(diffuse.rgb);
+
+//diffuse.rgb = texture2D(TEXTURE_0, uv0).aaa;
+
+//diffuse.rgb = color.rgb;
+//diffuse.rgb = texture2D(TEXTURE_0, fract(color.rg*0.0625)).rgb;
+
+	gl_FragColor = diffuse;
+	
+#endif // BYPASS_PIXEL_SHADER
+}
