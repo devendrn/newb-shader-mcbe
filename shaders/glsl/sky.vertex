@@ -1,6 +1,4 @@
 // __multiversion__
-// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
-// copyright © Newb Shader
 
 #if __VERSION__ >= 300
     #define attribute in
@@ -9,14 +7,11 @@
 
 #include "uniformWorldConstants.h"
 
-uniform vec4 CURRENT_COLOR;
 uniform vec4 FOG_COLOR;
 uniform vec2 FOG_CONTROL;
-uniform float RENDER_DISTANCE;
-
+uniform float RENDER_DISTANCE;
 #include "utilities/detectors.glsl"
-#include "config_utilities/sky.h"
-
+#include "config_utilities/sky.h"
 attribute mediump vec4 POSITION;
 attribute vec4 COLOR;
 
@@ -26,7 +21,8 @@ varying vec3 horizon_edge_color;
 varying vec3 wPos;
 
 void main()
-{
+{
+
 vec4 pos = POSITION;
 pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
 gl_Position = WORLDVIEWPROJ * pos;

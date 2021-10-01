@@ -1,6 +1,4 @@
 // __multiversion__
-// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
-// Newb Shader
 
 #include "vertexVersionCentroid.h"
 
@@ -122,7 +120,8 @@ void main()
 #endif
 
     gl_Position = pos;
-int frameIndex = int((COLOR.a*255.0) + 0.5);
+
+int frameIndex = int((COLOR.a*255.0) + 0.5);
 uv.xy = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[frameIndex].zw) + BANNER_UV_OFFSETS_AND_SCALES[frameIndex].xy;
 uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS_AND_SCALES[0].xy;
 

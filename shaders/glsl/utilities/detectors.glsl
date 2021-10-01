@@ -1,6 +1,4 @@
-// copyright (c) Newb shader
-
-// detectors are here
+// Newb shader
 
 // uniforms FOG_COLOR, FOG_CONTROL are used
 
@@ -33,7 +31,8 @@ bool detectUnderwater(){
 }
 
 // needs more optimisation
-float detectRain(bool underWater){
+float detectRain(bool underWater){
+
     // based on transition of FOG_CONTROL.xy
 
     // normal FOG_CONTROL.x varies with RENDER_DISTANCE
@@ -65,4 +64,5 @@ float detectRain(bool underWater){
         return 0.0;
     }
 }
-
+
+

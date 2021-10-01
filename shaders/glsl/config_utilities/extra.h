@@ -1,8 +1,4 @@
-/* Newb Shader
-   MISCELLANEOUS SETTINGS
-   see readme.txt for instructions
-*/
-
+// Newb Shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* SUN & MOON */
@@ -17,7 +13,7 @@
 /* GLOWY ORES */
 
 // Toggle + Value - Glowy ore (brightness)
-#define GLOWY_ORES 1.5
+#define GLOWY_ORES 2.0
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

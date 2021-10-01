@@ -1,5 +1,4 @@
 // __multiversion__
-// copyright (c) Newb shader
 
 #include "fragmentVersionCentroid.h"
 
@@ -104,7 +103,7 @@ vec4 inColor = color;
 // glowy ores
 #ifdef GLOWY_ORES
 	if(diffuse.a<0.06 && diffuse.a>0.0){
-		inColor.rgb = max(inColor.rgb,vec3(GLOWY_ORES)+diffuse.rgb);
+		inColor.rgb = max(inColor.rgb,vec3(GLOWY_ORES) + 0.6*diffuse.rgb);
 	}
 #endif
 

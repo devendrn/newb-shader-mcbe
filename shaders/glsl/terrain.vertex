@@ -1,14 +1,15 @@
 // __multiversion__
-// copyright (c) Newb Shader
 
 #ifndef BYPASS_PIXEL_SHADER
 
 #if __VERSION__ >= 300
-	#ifdef MSAA_FRAMEBUFFER_ENABLED
+
+	#ifdef MSAA_FRAMEBUFFER_ENABLED
 
 		centroid out vec2 uv0;
 		centroid out vec2 uv1;
-	#else
+
+	#else
 
 		out vec2 uv0;
 		out vec2 uv1;
@@ -22,7 +23,8 @@
 
 	varying vec2 uv0;
 	varying vec2 uv1;
-#endif
+
+#endif
 
 	varying vec4 color;
 	varying vec4 mistColor;
@@ -60,7 +62,6 @@
 #include "utilities/noise.glsl"
 #include "config_utilities/mist_fog.h"
 #include "config_utilities/clouds.h"
-
 #include "config_utilities/global.h"
 #include "config_utilities/terrain.h"
 
@@ -144,14 +145,13 @@ void main()
 	// World position is calculated here and can get huge
 	worldPos.xyz = ((POSITION.xyz) * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
 	worldPos.w = 1.0;
-	// pos will be calculated after wave code
+
+	// pos will be calculated after wave code
 
 #endif
 
 	vec3 wPos = worldPos.xyz;
 	vec3 cPos = POSITION.xyz;
-
-// I have no idea why BYPASS_PIXEL_SHADER exists
 
 #ifndef BYPASS_PIXEL_SHADER
 
@@ -225,7 +225,8 @@ void main()
 	highp float t = TIME;
 
 #endif
-
+
+
 // convert color space to linear-space for color correction (not entirely accurate)
 // and tree leaves, slab lighting fix
 
@@ -383,7 +384,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			// vines
 			amplitude *= 1.0 - (0.6 + 0.3*float(isTop))*float(isVines);
 
-		#endif
+		#endif
+
 		float wave = 1.0+mix(
 			sin(t*wave_speed*(1.0-0.5*float(underWater)) + phaseDiff),
 			sin(t*wave_speed*1.5 + phaseDiff),
@@ -486,7 +488,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 #ifndef BYPASS_PIXEL_SHADER
 
 
-// distance from the camera (used by mist, fog, water)
+// distance from the camera (used by mist, fog, water)
+
 #ifdef FANCY
 
 	float camDist = length(wPos.xyz);
@@ -532,7 +535,8 @@ if(!nether && !underWater){
 	mistColor.rgb *= max(0.75,uv1.y);
 	mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
 }
-
+
+
 #if defined(FOG) || defined(BLEND)
 
 // used by water and wet effect
@@ -672,7 +676,8 @@ if(isWater){
 		light = underWaterColor*((light*1.3)+vec3(underwater_brightness));
 
 		float caustics = disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
-		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
+		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
+
 		//if(is(uv1.y,0.81,0.82) || is(uv1.y,0.68,0.69) || is(uv1.y,0.56,0.57) || is(uv1.y,0.43,0.44) || is(uv1.y,0.31,0.32)){light.rgb=vec3(1.0,0.0,0.0);}
 		caustics *= 1.6 + 1.6*float( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32));
 
@@ -772,7 +777,8 @@ else{
 
 
 // Fake refraction and caustics (i know it's glitchy and useless)
-#if !defined(UNDERWATER) && defined(WATER_REFRACTION)
+
+#if !defined(UNDERWATER) && defined(WATER_REFRACTION)
 
 if(is(uv1.y,0.0,0.8127) && wPos.y<-2.0){
 	// soft caustic effect
@@ -785,7 +791,9 @@ if(is(uv1.y,0.0,0.8127) && wPos.y<-2.0){
 	gl_Position.xy += vec2(intensity*sin(t+dot(wPos.xyz,vec3(1.8))));
 }
 
-#endif
+#endif
+
+
 // apply light to color
 
 #ifdef MAYBE_WATER
@@ -800,7 +808,8 @@ if(is(uv1.y,0.0,0.8127) && wPos.y<-2.0){
 
 
 //color.rgb *= float(!(uv1.x<0.08 && uv1.x>0.05));
-//color.rgb = wPos.xyz;
+
+//color.rgb = wPos.xyz;
 
 /*
 // less precise normal
@@ -808,9 +817,11 @@ vec3 nrmlow = vec3(0.0);
 nrmlow.y = -float(shade>0.9);
 nrmlow.z = float(shade>0.75 && shade<0.9);
 nrmlow.x = float(shade>0.4 && shade<0.75);
-nrmlow *= sign(wPos);
+nrmlow *= sign(wPos);
+
 #ifdef ALPHA_TEST
-nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);#endif
+nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
+#endif
 */
 
 //color.rgb = uv1.yyy;
@@ -824,7 +835,8 @@ nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);#endif
 vec3 offset = cPos.xyz-(16.0*fract(wPos.xyz*0.0625));
 vec3 d1 = max(offset,0.0);
 vec3 d2 = max(-offset,0.0);
-offset = max((16.0-d2)*sign(d2),d1);
+offset = max((16.0-d2)*sign(d2),d1);
+
 offset = abs(offset-8.0)*0.125;
 offset = offset*offset*(3.0-2.0*offset);
 
@@ -842,7 +854,8 @@ vol *= vol*mask*uv1.y;
 vol *= min(7.0*relativeDist*(1.0-mask),1.0);
 vol *= clamp(3.0*(FOG_COLOR.r-FOG_COLOR.b),0.0,1.0);
 
-mistColor.a = min(mistColor.a + 0.3*vol,1.0);
+mistColor.a = min(mistColor.a + 0.3*vol,1.0);
+
 #endif
 
 #endif	//!BYPASS_PIXEL_SHADER

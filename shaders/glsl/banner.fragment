@@ -1,6 +1,4 @@
 // __multiversion__
-// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
-// Newb Shader
 
 #include "fragmentVersionCentroid.h"
 #include "uniformShaderConstants.h"
@@ -48,7 +46,8 @@ base.rgb *= base.rgb;
 
 #ifdef ENABLE_FOG
 	//apply mist and fog
-    base.rgb = mix( base.rgb, mistColor.rgb, mistColor.a );    base.rgb = mix( base.rgb, fogColor.rgb, fogColor.a );
+    base.rgb = mix( base.rgb, mistColor.rgb, mistColor.a );
+    base.rgb = mix( base.rgb, fogColor.rgb, fogColor.a );
 #endif
 
 // color correction

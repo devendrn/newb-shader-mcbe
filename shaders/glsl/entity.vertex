@@ -1,6 +1,4 @@
 // __multiversion__
-// This signals the loading code to prepend either #version 100 or #version 300 es as apropriate.
-// Newb Shader
 
 #include "vertexVersionCentroidUV.h"
 
@@ -33,7 +31,8 @@ attribute vec4 NORMAL;
 #endif
 
     varying lowp vec3 oPos1;
-    varying lowp vec3 oPos2;
+    varying lowp vec3 oPos2;
+
 #endif
 
 #ifdef COLOR_BASED
@@ -216,7 +215,8 @@ if(end){
     fogColor.rgb = vec3(0.16,0.06,0.2);
 }
 if(underWater){
-    light.rgb *= vec3(0.5,1.4,1.6);
+    light.rgb *= vec3(0.5,1.4,1.6);
+
     highp float t = TIME;
     float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
     light.rgb += vec3(1.5,3.0,3.3)*caustic;

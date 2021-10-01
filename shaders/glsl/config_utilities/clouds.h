@@ -1,4 +1,4 @@
-// copyright (c) Newb shader
+// Newb shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* SMOOTH CLOUDS */

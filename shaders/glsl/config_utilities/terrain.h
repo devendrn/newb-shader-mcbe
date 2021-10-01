@@ -1,9 +1,4 @@
-/* Newb Shader
-   TERRAIN SHADER SETTINGS
-   (exclusive to terrain.vertex)
-   see readme.txt for instructions
-*/
-
+// Newb Shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* VOXEL SHADOW SCRIPT SUPPORT */

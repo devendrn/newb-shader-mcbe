@@ -1,4 +1,4 @@
-// copyright (c) Newb Shader
+// Newb Shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* FOG & MIST */

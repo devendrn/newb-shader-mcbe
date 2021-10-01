@@ -1,9 +1,4 @@
-/* Newb Shader
-   MAIN SETTINGS
-   terrain,entities,banner,clouds
-   see readme.txt for instructions
-*/
-
+// Newb Shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* TIME */
