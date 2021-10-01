@@ -14,6 +14,15 @@
 
 
 /*""""""""""""""""""""""""""""""""""""""*/
+/* GLOWY ORES */
+
+// Toggle + Value - Glowy ore (brightness)
+#define GLOWY_ORES 1.5
+
+/*""""""""""""""""""""""""""""""""""""""*/
+
+
+/*""""""""""""""""""""""""""""""""""""""*/
 /* GUI TOUCH CIRCLE */
 
 // Value - Touch circle visibility

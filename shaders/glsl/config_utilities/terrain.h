@@ -58,6 +58,9 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Toggle - Lantern swing
 #define LANTERN_WAVE
 
+// Toggle - Non-transparent leaves wave (might cause white lines at edges)
+#define ALL_LEAVES_WAVE
+
 // Toggle - Extra plants Wave for 1.17.10,1.17,11 (won't work with add-ons which add new blocks)
 //#define EXTRA_PLANTS_WAVE
 

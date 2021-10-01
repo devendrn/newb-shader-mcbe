@@ -436,7 +436,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 #else
 
-	#ifdef PLANTS_WAVE
+	#if defined(PLANTS_WAVE) && defined(ALL_LEAVES_WAVE)
 
 	// for non-fancy and jungle leaves
 	if(color.a==0.0 && max(COLOR.g,COLOR.r)>0.37 && distanceThreshold<45.0){

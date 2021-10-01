@@ -1,8 +1,11 @@
 # Newb Shader MCBE
-An aesthetic lightweight shader for MCBE (GLSL)
 
-[MCPEDL post link](https://mcpedl.com/newb-shader/)
-
-[Newb Shader discord server](https://discord.gg/Cc4qsgHcYm)
+![Newb Shader 1.1.8 thumbnail](/.docs/newb_thumbnail.png)
+An aesthetic lightweight shader for Minecraft BE/PE (GLSL)
 
 Author's discord: VeteranDev#2969
+
+#### [MCPEDL Post](https://mcpedl.com/newb-shader/)  
+#### [Discord Server](https://discord.gg/Cc4qsgHcYm)  
+#### [Customisation](/.docs/how_to_config.md)  
+#### [Credits](/.docs/credits.md)

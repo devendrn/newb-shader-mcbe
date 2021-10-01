@@ -11,7 +11,8 @@
       "water_surface_color": "#7FBF00",
       "water_surface_transparency": 0.1,
       "water_fog_color": "#0000FF",
-      "water_fog_distance": 20,      "fog_color": "#ABD2FF"
+      "water_fog_distance": 20,
+      "fog_color": "#ABD2FF"
     },
     "plains": {
       "water_surface_color": "#7FBF00",

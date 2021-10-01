@@ -10,7 +10,8 @@
 #define rain_cloud_size 0.9
 
 // Normal cloud size (0-1)
-#define normal_cloud_size 0.3
+#define normal_cloud_size 0.3
+
 // Value - Cloud map size (0-100)
 #define cloud_noise_size 36.0
 
@@ -37,7 +38,8 @@
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
-
+
+
 // Code starts here - Users shouldn't mess down here
 // Clouds noise
 
