@@ -30,7 +30,7 @@ All the configuration files can be found here as a `.h` file.
 > #### Color options
 > Colors are in RGB format (range 0.0-1.0 for most options)
 >
->        const vec3 example = vec3(<red>,<green>,<blue>);`
+>        const vec3 example = vec3(<red>,<green>,<blue>);
 >
 > Some color examples:  
 > `vec3(0.0,0.0,0.0)` - black  

@@ -3,7 +3,6 @@
 /*""""""""""""""""""""""""""""""""""""""*/
 /* COLOR CORRECTION */
 
-// Some configuration options for users
 
 // Type - Tone mapping type 
 // 1 - Exponential
@@ -27,7 +26,6 @@
 // Toggle + Color - Tinting
 //#define TINT vec3(1.0,0.8,0.4)
 
-// End of configuration
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

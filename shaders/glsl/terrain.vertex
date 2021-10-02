@@ -118,6 +118,15 @@ vec3 getSkyRefl(vec3 horizonEdge, vec3 horizon, vec3 zenith, float y, float h){
 	return renderSky(horizonEdge, horizon, zenith, y);
 }
 
+// simpler sky reflection for rain
+vec3 getRainSkyRefl(vec3 horizon, vec3 zenith, float h){
+
+	h = 1.0-h*h;
+	float hsq = h*h;
+
+	return mix(zenith,horizon,hsq*hsq);
+}
+
 // fresnel - Schlick's approximation
 float calculateFresnel(float cosR, float r0){
 	float a = 1.0-cosR;
@@ -384,6 +393,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			// vines
 			amplitude *= 1.0 - (0.6 + 0.3*float(isTop))*float(isVines);
 
+			// wave the bottom of plants in opposite direction to make it look fixed
+			if(isPlants && isColored && !isTop){amplitude *= (bPos.y-1.0)*float(bPos.y>0.0);}
 		#endif
 
 		float wave = 1.0+mix(
@@ -391,9 +402,6 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			sin(t*wave_speed*1.5 + phaseDiff),
 			rainFactor);
 		wave *= amplitude*uv1.y;
-
-		// wave the bottom of plants in opposite direction to make it look fixed
-		if(isPlants && isColored && !isTop){wave *= (bPos.y-1.0)*float(bPos.y>0.0);}
 
 		worldPos.y -= wave*wave*0.5;
 		worldPos.xz -= vec2(wave);
@@ -726,7 +734,7 @@ if(rainFactor > 0.0){
 		// cosine of incidence angle
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
 
-		wetRefl.rgb = getSkyRefl(horizonEdgeCol,horizonCol,zenithCol,cosR,-wPos.y);
+		wetRefl.rgb = getRainSkyRefl(horizonCol,zenithCol,cosR);
 		wetRefl.a = calculateFresnel(cosR,0.03)*rainFactor*wetness;
 
 		// extra
