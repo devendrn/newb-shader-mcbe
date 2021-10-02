@@ -16,7 +16,7 @@
 #define cloud_noise_size 36.0
 
 // Value - Cloud movement speed
-#define cloud_speed 0.05
+#define cloud_speed 0.04
 
 // Value - Cloud shadow intensity (0-1)
 #define cloud_shadow 0.54

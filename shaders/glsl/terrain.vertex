@@ -260,7 +260,7 @@ void main()
 // all of these will be multiplied by tex uv1 in frag so functions should be divided by uv1 here
 
 vec3 light;
-vec3 torchLight = torch_color*((torch_intensity*uv1.x)/(1.0-0.9*lit.x));
+vec3 torchLight = torch_color*((torch_intensity*uv1.x)/(0.5-0.45*lit.x));
 
 #ifdef BLINKING_TORCH
 	torchLight *= 1.0 - 0.1*noise1D(t*2.5);
@@ -270,14 +270,14 @@ if(!nether && !end){
 	// overworld lighting
 
 	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + 1.5*rainFactor),1.0);
-	float nightFactor = 1.0-dayFactor;
+	float nightFactor = 1.0-dayFactor*dayFactor;
 	float lightIntensity = sun_intensity*(1.0 - rainFactor*FOG_COLOR.g)*(1.0 + night_brightness*nightFactor);
 
 	// min ambient in caves
 	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y)*(1.0-uv1.y));
 
 	// sky ambient
-	light += mix(horizonCol,zenithCol,uv1.y)*(uv1.y*(2.0-lit.y)*(1.0+4.0*nightFactor));
+	light += mix(horizonCol,zenithCol,2.0*uv1.y-lit.y)*(uv1.y*(2.0-lit.y)*(1.2+4.0*nightFactor));
 
 	// shadow from top light
 	float shadow = float(uv1.y > 0.876);
@@ -293,11 +293,11 @@ if(!nether && !end){
 	shadow *= 0.8 + 0.2*float(shade>0.8);
 
 	// direct light from top
-	vec3 tintColor = sunLightTint(night_color,morning_color,day_color,dayFactor,rainFactor);
+	vec3 tintColor = sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
 	light += (shadow*lightIntensity*(1.0-uv1.x*nightFactor))*tintColor;
 
 	// extra ambient caused by direct light
-	light += (0.5*lightIntensity*shade*(lit.y-(0.78*lit.y*lit.y)))*tintColor;
+	light += (1.6*lightIntensity*shade*(lit.y-(0.78*lit.y*lit.y)))*tintColor;
 
 	// torch light
 	light += torchLight*(1.0-(max(shadow,0.6*lit.y)*dayFactor));

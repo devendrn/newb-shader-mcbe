@@ -95,12 +95,12 @@ float lightIntensity(){
 
     float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
 
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.2;
+    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 
     return light*light*lit;
 
 #else
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.2;
+    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 	return lit*(0.7+abs(NORMAL.y)*0.3)*(0.9+abs(NORMAL.x)*0.1);
 
 #endif	//FANCY

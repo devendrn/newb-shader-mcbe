@@ -56,7 +56,7 @@ vec4 renderFog(vec3 fogColor, float len, bool nether){
 	else{
 		// inverse color correction
 		fog.rgb = FOG_COLOR.rgb;
-		fog.rgb = pow(fog.rgb,vec3(1.3888));
+		fog.rgb = pow(fog.rgb,vec3(1.37));
 		vec3 w = vec3(0.7966);
 		fog.rgb = fog.rgb*(w + fog.rgb)/(w + fog.rgb*(vec3(1.0) - w));
 	}

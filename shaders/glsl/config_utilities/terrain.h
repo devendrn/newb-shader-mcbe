@@ -28,11 +28,11 @@
 #define night_brightness 0.5
 
 // Value - Torch brightness
-#define torch_intensity 2.0
+#define torch_intensity 1.0
 
 // Color - Top light color
 const vec3 morning_color = vec3(1.0,0.45,0.14);
-const vec3 day_color = vec3(1.0,0.8,0.65);
+const vec3 noon_color = vec3(1.0,0.75,0.6);
 const vec3 night_color = vec3(0.4,0.6,1.0);
 
 // Color - Torch light color

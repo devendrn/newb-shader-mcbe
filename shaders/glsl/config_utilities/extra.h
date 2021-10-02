@@ -13,7 +13,7 @@
 /* GLOWY ORES */
 
 // Toggle + Value - Glowy ore (brightness)
-#define GLOWY_ORES 2.0
+#define GLOWY_ORES 2.3
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
