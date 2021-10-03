@@ -25,7 +25,7 @@
 #define shadow_intensity 0.7
 
 // Value - Night extra brightness
-#define night_brightness 0.5
+#define night_brightness 0.4
 
 // Value - Torch brightness
 #define torch_intensity 1.0
@@ -82,9 +82,6 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 
 // Toggle - Use only surface angle for water transparency fade (gives more transparency)
 //#define USE_ANGLE_BLEND_FADE
-
-// Toggle - Fake water refraction and caustics (very glitchy - don't enable)
-//#define WATER_REFRACTION
 
 // Value - Water transparency (0-1)
 #define water_transparency 0.47

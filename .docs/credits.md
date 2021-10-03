@@ -5,4 +5,3 @@
 
 #### Discord Servers which were helpful:
   - YamaRin's Basement: It's a great community with many friendly shader devs!
-

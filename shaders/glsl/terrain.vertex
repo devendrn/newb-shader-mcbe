@@ -245,13 +245,13 @@ void main()
 	sCol = COLOR.rgb;
 	color.rgb = vec3(1.0);
 
-	uv1.y *= 1.0015;
+	uv1.y *= 1.00151;
 
 #else
 
 	if(isColored){color.rgb *= color.rgb*1.2;}
 
-	if(color.a == 0.0 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.0015;}
+	if(color.a == 0.0 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.00151;}
 
 #endif
 
@@ -274,10 +274,10 @@ if(!nether && !end){
 	float lightIntensity = sun_intensity*(1.0 - rainFactor*FOG_COLOR.g)*(1.0 + night_brightness*nightFactor);
 
 	// min ambient in caves
-	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y)*(1.0-uv1.y));
+	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y));
 
 	// sky ambient
-	light += mix(horizonCol,zenithCol,2.0*uv1.y-lit.y)*(uv1.y*(2.0-lit.y)*(1.2+4.0*nightFactor));
+	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3+4.0*nightFactor));
 
 	// shadow from top light
 	float shadow = float(uv1.y > 0.876);
@@ -293,23 +293,21 @@ if(!nether && !end){
 	shadow *= 0.8 + 0.2*float(shade>0.8);
 
 	// direct light from top
-	vec3 tintColor = sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
-	light += (shadow*lightIntensity*(1.0-uv1.x*nightFactor))*tintColor;
-
-	// extra ambient caused by direct light
-	light += (1.6*lightIntensity*shade*(lit.y-(0.78*lit.y*lit.y)))*tintColor;
+	float dirLight = shadow*(1.0-uv1.x*nightFactor);
+	dirLight *= lightIntensity;
+	light += dirLight*sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
 
 	// torch light
-	light += torchLight*(1.0-(max(shadow,0.6*lit.y)*dayFactor));
+	light += torchLight*(1.0-(max(shadow,0.65*lit.y)*dayFactor));
 }
 else{
 	// nether & end lighting
 
 	// ambient
 	if(end){
-		light = vec3(1.1,0.7,1.3)*1.8;
+		light = vec3(1.98,1.25,2.3);
 	}else{
-		light = vec3(1.1,0.8,0.7)*1.5;
+		light = vec3(1.65,1.2,1.05);
 	}
 
 	// torch light
@@ -377,7 +375,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	if(shouldWave && distanceThreshold<45.0){
 
 		// values must be a multiple of pi/4
-		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
+		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
 		float amplitude = wave_amplitude;
 		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
@@ -389,12 +387,11 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		#else
 
 			amplitude *= 1.0 - 0.5*float(isTreeLeaves);
-
-			// vines
 			amplitude *= 1.0 - (0.6 + 0.3*float(isTop))*float(isVines);
 
 			// wave the bottom of plants in opposite direction to make it look fixed
 			if(isPlants && isColored && !isTop){amplitude *= (bPos.y-1.0)*float(bPos.y>0.0);}
+
 		#endif
 
 		float wave = 1.0+mix(
@@ -512,17 +509,14 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 float relativeDist = camDist / RENDER_DISTANCE;
 
 
-// fade out blended water layer to opaque layer
-
 #ifdef BLEND
 
-	//Mega hack: only things that become opaque are allowed to have vertex-driven transparency in the Blended layer...
-	//to fix this we'd need to find more space for a flag in the vertex format. color.a is the only unused part
-	bool becomeOpaqueInDistance = color.a < 0.95;
-	if(becomeOpaqueInDistance) {
+	// vertex based transparency (mostly for water)
+	if(color.a < 0.95) {
 
 		#ifdef FANCY
 
+			// fade out blended water layer to opaque layer
 			float alphaFadeOut = clamp(camDist / FAR_CHUNKS_DISTANCE, 0.0, 1.0);
 			color.a = mix(getWaterAlpha(COLOR.rgb)-float(underWater)*0.3, 1.0, alphaFadeOut);
 
@@ -562,9 +556,8 @@ if(isWater){
 	else{ transmission = mix(transmission,sea_water_color,(COLOR.r*2.0)-1.0);}
 	transmission *= COLOR.g;
 
-	// this gives the water its color
-	transmission *= (0.25 + FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor)*light;
-	transmission *= max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2);
+	transmission *= 0.3 + (FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor);
+	transmission *= light*max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2)*max(0.3+0.7*uv1.y,uv1.x);
 
 	float cosR;
 	vec3 waterRefl;
@@ -586,7 +579,7 @@ if(isWater){
 		float sunRefl = clamp((abs(viewDir.x)-0.9)/0.099,0.0,1.0);
 		sunRefl *= sunRefl*sunRefl;
 		sunRefl *= sunRefl;
-		sunRefl *= pow(FOG_COLOR.r/sqrt(dot(FOG_COLOR.rgb,FOG_COLOR.rgb)),8.0);
+		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
 		waterRefl += 2.5*horizonEdgeCol*sunRefl;
 
 		// cloud reflection
@@ -629,7 +622,7 @@ if(isWater){
 
 	// for side plane
 	else{
-		cosR = max(dot(viewDir,normalize(vec3(viewDir.x,0.0,viewDir.z))),float(wPos.y<1.0));
+		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
 		cosR += water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
 
 		waterRefl = zenithCol*(lit.y*1.3);
@@ -738,7 +731,7 @@ if(rainFactor > 0.0){
 		wetRefl.a = calculateFresnel(cosR,0.03)*rainFactor*wetness;
 
 		// extra
-		float streaks = viewDir.x/sqrt(dot(viewDir.xz,viewDir.xz));
+		float streaks = viewDir.x/length(viewDir.xz);
 		streaks = sin(streaks*7.0);
 		streaks *= streaks;
 
@@ -782,24 +775,6 @@ else{
 	mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
 
 #endif // FOG
-
-
-// Fake refraction and caustics (i know it's glitchy and useless)
-
-#if !defined(UNDERWATER) && defined(WATER_REFRACTION)
-
-if(is(uv1.y,0.0,0.8127) && wPos.y<-2.0){
-	// soft caustic effect
-	float caustics = 2.0*disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
-	caustics += 0.4+0.4*sin(t + (cPos.x + cPos.z)*rd);
-
-	light += FOG_COLOR.g*caustics*caustics*lit.y*vec3(uv1.y*1.9,uv1.y*3.2,3.1);
-
-	float intensity = min(0.05,uv1.y*dot(abs(wPos.xyz),vec3(0.006)));
-	gl_Position.xy += vec2(intensity*sin(t+dot(wPos.xyz,vec3(1.8))));
-}
-
-#endif
 
 
 // apply light to color
@@ -851,7 +826,7 @@ offset = offset*offset*(3.0-2.0*offset);
 vec3 ofPos = (wPos.xyz+offset);
 vec3 nrmof = normalize(wPos);
 
-float u = nrmof.z/sqrt(dot(nrmof.zy,nrmof.zy));
+float u = nrmof.z/length(nrmof.zy);
 
 float diff = 0.1*offset.x + 0.2*offset.y + offset.z + 0.07*t;
 float mask = nrmof.x*nrmof.x;
@@ -862,7 +837,7 @@ vol *= vol*mask*uv1.y;
 vol *= min(7.0*relativeDist*(1.0-mask),1.0);
 vol *= clamp(3.0*(FOG_COLOR.r-FOG_COLOR.b),0.0,1.0);
 
-mistColor.a = min(mistColor.a + 0.3*vol,1.0);
+mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 
 #endif
 
