@@ -294,8 +294,8 @@ if(!nether && !end){
 
 	// direct light from top
 	float dirLight = shadow*(1.0-uv1.x*nightFactor);
-	dirLight *= lightIntensity;
-	light += dirLight*sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
+	dirLight += 0.45*shade*lit.y*(1.2-shadow);
+	light += (dirLight*lightIntensity)*sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
 
 	// torch light
 	light += torchLight*(1.0-(max(shadow,0.65*lit.y)*dayFactor));
@@ -642,7 +642,7 @@ if(isWater){
 
 	#endif
 
-	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel;
+	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel*0.9;
 
 }	//isWater
 
@@ -774,8 +774,7 @@ else{
 	mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
 	mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
 
-#endif // FOG
-
+#endif // FOG
 
 // apply light to color
 

@@ -2,6 +2,8 @@
 
 > **Warning**: Making wrong changes to the files may cause shader to fail
 
+### Main steps
+
 1) Make sure you are using "External Storage" in Minecraft settings.
 2) Using a file manager, navigate to this folder:
 `/storage/games/com.mojang/resource_packs/NewbShader/shaders/glsl/config_utilities`  
@@ -13,7 +15,7 @@ All the configuration files can be found here as a `.h` file.
  configuration section. Don't mess with the
  code section unless you understand what you are doing.
  
-# Making changes
+### Making changes
 
 > #### Toggle options
 > Add `//` before `#define` to turn it OFF.
@@ -22,7 +24,7 @@ All the configuration files can be found here as a `.h` file.
 > `//#define EXAMPLE` will disable EXAMPLE  
 
 > #### Value options
-> Values must be in decimal format. eg: `1.7`,`0.1`,`0.0`.  
+> Values must be in decimal format. eg: `1.7`,`0.1`,`0.0`  
 > Don't toggle unless specified "Toggle + Value".  
 >
 >        #define example <your value here>
@@ -43,3 +45,43 @@ All the configuration files can be found here as a `.h` file.
 >
 >        // <read this>
 >        #define EXAMPLE_TYPE 2
+
+### Config files
+
+A list of all config files, and their basic options
+
+> ##### terrain.h
+> - Terrain lighting settings
+> - Underwater lighting settings
+> - Foliage, lantern wave settings
+> - Water settings
+
+> ##### color.h
+> - Tonemapping
+> - Exposure
+> - Contrast
+> - Saturation
+> - Tinting
+
+> ##### mist_fog.h
+> - Mist intensity
+> - Fog type
+
+> ##### clouds.h
+> - Cloud settings
+> - Aurora
+
+> ##### global.h
+> - Light intensity
+> - Animation time
+
+> ##### sky.h
+> - Sky colors
+> - Underwater fog color
+
+> ##### extra.h
+> - Sun/moon rotation
+> - Glowy ores
+> - GUI touch circle
+
+If you have a suggestion, dm the creator at discord.

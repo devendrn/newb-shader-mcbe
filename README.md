@@ -1,5 +1,4 @@
-# Newb Shader MCBE
-
+# Newb Shader MCBE  
 ![Newb Shader 1.1.8 thumbnail](/.docs/newb_thumbnail.png)
 An aesthetic lightweight shader for Minecraft BE/PE (GLSL)
 
