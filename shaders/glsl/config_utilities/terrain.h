@@ -18,7 +18,7 @@
 // Toggle - Flickering torch light
 //#define BLINKING_TORCH
 
-// Toggle - God rays
+// Toggle - God rays (incomplete)
 //#define GOD_RAYS
 
 // Value - Intensity of soft shadow (0-1)
@@ -45,13 +45,12 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 /* WAVE */
 
 // Toggle - Plants Wave (leaves/plants)
-#define PLANTS_WAVE
-
-// Toggle - Water Wave
-#define WATER_WAVE
+// Value - Wave animation intensity (Plants)
+#define PLANTS_WAVE 0.02
 
 // Toggle - Lantern swing
-#define LANTERN_WAVE
+// Value - Lantern swing intensity (0-0.3)
+#define LANTERN_WAVE 0.08
 
 // Toggle - Non-transparent leaves wave (might cause white lines at edges)
 #define ALL_LEAVES_WAVE
@@ -62,12 +61,6 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Value - Wave animation speed (Plants,leaves)
 #define wave_speed 2.6
 
-// Value - Wave animation intensity (Plants)
-#define wave_amplitude 0.02
-
-// Value - Lantern swing intensity (0-0.3)
-#define lantern_swing_intensity 0.08
-
 // Value - Rainy wind blow transparency (0-0.3)
 #define rain_blow_opacity 0.19
 
@@ -76,6 +69,10 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 
 /*""""""""""""""""""""""""""""""""""""""*/
 /* WATER */
+
+// Toggle - Water wave
+// Value - Wave intensity of water surface
+#define WATER_WAVE 0.02
 
 // Toggle - Cloud reflection on water
 #define CLOUD_REFLECTION
@@ -101,7 +98,8 @@ const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 /* UNDERWATER */
 
 // Toggle - Underwater Wave
-#define UNDERWATER_WAVE
+// Value - Wave intensity
+#define UNDERWATER_WAVE 0.06
 
 // Value - Underwater brightness
 #define underwater_brightness 0.8

@@ -259,14 +259,29 @@ void main()
 // Lighting (a bit complicated)
 // all of these will be multiplied by tex uv1 in frag so functions should be divided by uv1 here
 
-vec3 light;
-vec3 torchLight = torch_color*((torch_intensity*uv1.x)/(0.5-0.45*lit.x));
+float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
 
 #ifdef BLINKING_TORCH
-	torchLight *= 1.0 - 0.1*noise1D(t*2.5);
+	torch_attenuation *= 1.0 - 0.1*noise1D(t*2.5);
 #endif
 
-if(!nether && !end){
+vec3 torchLight = torch_color*torch_attenuation;
+
+vec3 light;
+if(nether || end){
+	// nether & end lighting
+
+	// ambient
+	if(end){
+		light = vec3(1.98,1.25,2.3);
+	}else{
+		light = vec3(1.65,1.2,1.05);
+	}
+
+	// torch light
+	light += torchLight*1.1;
+}
+else{
 	// overworld lighting
 
 	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + 1.5*rainFactor),1.0);
@@ -299,19 +314,6 @@ if(!nether && !end){
 
 	// torch light
 	light += torchLight*(1.0-(max(shadow,0.65*lit.y)*dayFactor));
-}
-else{
-	// nether & end lighting
-
-	// ambient
-	if(end){
-		light = vec3(1.98,1.25,2.3);
-	}else{
-		light = vec3(1.65,1.2,1.05);
-	}
-
-	// torch light
-	light += torchLight*1.1;
 }
 
 // darken at crevices
@@ -377,7 +379,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		// values must be a multiple of pi/4
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
-		float amplitude = wave_amplitude;
+		float amplitude = PLANTS_WAVE;
 		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
 
 		#ifdef SEASONS
@@ -400,6 +402,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			rainFactor);
 		wave *= amplitude*uv1.y;
 
+		//worldPos.y -= 1.0-sqrt(1.0-wave*wave);
 		worldPos.y -= wave*wave*0.5;
 		worldPos.xz -= vec2(wave);
 
@@ -409,12 +412,15 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	#ifdef LANTERN_WAVE
 
-		bool isLantern = ((bPos.y==0.6875 || bPos.y==0.5625) && (bPos.x==0.375 || bPos.x==0.625) ) || ( (bPos.y==0.5625 || bPos.y==0.125) && (bPos.x==0.3125 || bPos.x==0.6875) );
-		bool isChain = (bPos.x==0.4375 || bPos.x==0.5625) && (bPos.y==0.6875);
+		bool y6875 = bPos.y==0.6875;
+		bool y5625 = bPos.y==0.5625;
+
+		bool isLantern = ( (y6875 || y5625) && (bPos.x==0.375 || bPos.x==0.625) ) || ( (y5625 || bPos.y==0.125) && (bPos.x==0.3125 || bPos.x==0.6875) );
+		bool isChain = (bPos.x==0.4375 || bPos.x==0.5625) && y6875;
 
 		// fix for non-hanging lanterns waving top part (works only if texPosY is correct)
 		if( texPosY<0.3 || is(texPosY,0.67,0.69) || is(texPosY,0.55,0.6) ){
-			isLantern = isLantern && (bPos.y != 0.5625);
+			isLantern = isLantern && !y5625;
 		}
 
 		// X,Z axis rotation
@@ -422,10 +428,9 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			float offset = dot(floor(cPos),vec3(0.3927));
 
 			// simple random wave for angle
-			vec2 theta = vec2(
-				mix(sin(t + offset),1.7*sin(t*1.4 + offset),rainFactor),
-				mix(sin(t + offset +0.7),1.7*sin(t*1.4 + offset +0.7),rainFactor)
-			)*lantern_swing_intensity*lit.y*noise1D(t*0.15);
+			vec2 theta = vec2(t + offset,t*1.4 + offset);
+			theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
+			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.15);
 
 			float sinA = sin(theta.x);
 			float cosA = cos(theta.x);
@@ -450,7 +455,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		/// values must be a multiple of pi/4
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
-		float amplitude = wave_amplitude*0.4;
+		float amplitude = PLANTS_WAVE*0.4;
 		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
 
 		float wave = 1.0+sin(t*wave_speed + phaseDiff);
@@ -466,7 +471,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 		if(isWater && distanceThreshold < 35.0){
 			worldPos.y += 0.002;
-			worldPos.xy += vec2(0.02,min(0.3*fract(cPos.y),0.03))*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
+			worldPos.xy += WATER_WAVE*vec2(1.0,min(15.0*fract(cPos.y),1.5))*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
 		}
 
 	#endif
@@ -541,8 +546,11 @@ if(!nether && !underWater){
 
 #if defined(FOG) || defined(BLEND)
 
-// used by water and wet effect
-vec3 viewDir = normalize(-wPos.xyz);
+#ifdef FANCY
+	vec3 viewDir = -wPos.xyz/camDist;
+#else
+	vec3 viewDir = normalize(-wPos.xyz);
+#endif
 
 #ifdef MAYBE_WATER
 
@@ -562,13 +570,12 @@ if(isWater){
 	float cosR;
 	vec3 waterRefl;
 
-	// reflection
-
-	// for top plane
+	// reflection for top plane
 	if( fractCposY > 0.0 ){
 
 		// calculate cosine of incidence angle and apply water bump
 		float bump = water_bump*disp(cPos.xyz,t,chunkBorder);
+		bump += 0.12*water_bump*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
 		cosR = abs(viewDir.y);
 		cosR = mix(cosR,(1.0-cosR*cosR),bump);
 
@@ -582,10 +589,9 @@ if(isWater){
 		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
 		waterRefl += 2.5*horizonEdgeCol*sunRefl;
 
-		// cloud reflection
-
 		#if defined(FANCY) && defined(CLOUD_REFLECTION)
 
+			// cloud reflection
 			vec2 parallax = viewDir.xz/viewDir.y;
 			vec2 projectedPos = (0.7*wPos.xz*cloud_size) - parallax;
 
@@ -620,7 +626,7 @@ if(isWater){
 		else{ waterRefl *= (0.4+0.1*sin(t*2.0+cPos.y*12.566)) - 0.2*float(fractCposY > 0.9); }
 	}
 
-	// for side plane
+	// reflection for side plane
 	else{
 		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
 		cosR += water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
@@ -665,8 +671,7 @@ if(isWater){
 
 	#ifdef UNDERWATER_WAVE
 
-		//gl_Position.xy += vec2(min(0.008*pos.z,1.0)*sin(t*1.1 + dot(pos.xyz,vec3(2.0,2.0,0.01))));
-		gl_Position.xy += vec2(min(0.008*pos.z,1.0)*sin(t*1.1 + dot(cPos.xyz,vec3(rd))));
+		gl_Position.xy += vec2(UNDERWATER_WAVE*min(0.06*pos.z,0.6)*sin(t*1.1 + dot(cPos.xyz,vec3(rd))));
 
 	#endif
 
