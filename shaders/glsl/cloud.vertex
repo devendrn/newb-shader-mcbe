@@ -20,41 +20,40 @@ varying vec4 color;
 
 void main()
 {
+	//// smooth clouds
 
-    //// smooth clouds
+	POS4 worldPos = WORLD * POSITION;
 
-    POS4 worldPos = WORLD * POSITION;
+	// Displaces the cloud plane to look more spherical
+	vec4 newPos = POSITION;
+	newPos.y *= 0.1;
+	float len = length(worldPos.xz)*0.004;
+	newPos.y -= len*len*sign(worldPos.y);
 
-    // Displaces the cloud plane to look more spherical
-    vec4 newPos = POSITION;
-    newPos.y *= 0.1;
-    float len = length(worldPos.xz)*0.004;
-    newPos.y -= len*len*sign(worldPos.y);
+	POS4 pos = WORLDVIEWPROJ * newPos;
 
-    POS4 pos = WORLDVIEWPROJ * newPos;
+	gl_Position = pos;
 
- 	gl_Position = pos;
+	//// time
+	#ifdef USE_REAL_WORLD_TIME
+		// in seconds, resets to 0 every hour (3600 = 1 hour)
+		// we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
+		highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
+	#else
+		highp float t = TIME;
+	#endif
 
-    //// time
-    #ifdef USE_REAL_WORLD_TIME
-        // in seconds, resets to 0 every hour (3600 = 1 hour)
-        // we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
-        highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
-    #else
-        highp float t = TIME;
-    #endif
+	float rain = detectRain(false);
 
-    float rain = detectRain(false);
-    
-    // POSITION - blocky movement - but gives a more static uv
-    //vec2 cloudUV = POSITION.xz*20.0;
+	// POSITION - blocky movement - but gives a more static uv
+	//vec2 cloudUV = POSITION.xz*20.0;
 
- 	color = vec4(CURRENT_COLOR.rgb,1.0);
-    color = renderClouds(color, worldPos.xz*cloud_size, t, rain);
-    color.rgb = mix(color.rgb,color.ggg*FOG_COLOR.g*3.5,rain*0.8);
+	color = vec4(CURRENT_COLOR.rgb,1.0);
+	color = renderClouds(color, worldPos.xz*cloud_size, t, rain);
+	color.rgb = mix(color.rgb,color.ggg*FOG_COLOR.g*3.5,rain*0.8);
 
-    // cloud depth
-    gl_Position.y += color.a*10.0;
+	// cloud depth
+	gl_Position.y += color.a*10.0;
 
 	color.a *= cloud_alpha;
 
@@ -66,9 +65,8 @@ void main()
 		color += auroras;
 	#endif
 
-    // fade out cloud layer
-    float depth = length(worldPos.xyz)*0.002;
-    float fade = 1.0 - clamp((depth-0.5)*2.0,0.0,1.0);
-    color.a *= fade;
-
+	// fade out cloud layer
+	float depth = length(worldPos.xyz)*0.002;
+	float fade = 1.0 - clamp((depth-0.5)*2.0,0.0,1.0);
+	color.a *= fade;
 }

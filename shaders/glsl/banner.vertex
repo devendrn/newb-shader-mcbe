@@ -25,30 +25,30 @@ attribute vec4 COLOR;
 #if defined(USE_SKINNING)
 
 #ifdef MCPE_PLATFORM_NX
-    attribute uint BONEID_0;
+	attribute uint BONEID_0;
 #else
-    attribute float BONEID_0;
+	attribute float BONEID_0;
 #endif
 
 #endif
 
 #if __VERSION__ >= 300
-    _centroid varying vec4 uv;
+	_centroid varying vec4 uv;
 #else
-    varying vec4 uv;
+	varying vec4 uv;
 #endif
 
 #ifdef ENABLE_FOG
-    varying vec4 mistColor;
-    varying vec4 fogColor;
+	varying vec4 mistColor;
+	varying vec4 fogColor;
 #endif
 
 #ifdef ENABLE_LIGHT
-    varying vec4 light;
+	varying vec4 light;
 #endif
 
 #ifndef DISABLE_TINTING
-    varying vec4 color;
+	varying vec4 color;
 #endif
 
 const float AMBIENT = 0.45;
@@ -59,48 +59,48 @@ const float ZFAC = 0.1;
 float lightIntensity(){
 #ifdef FANCY
 
-    #ifdef USE_SKINNING
-        #if defined(LARGE_VERTEX_SHADER_UNIFORMS)
-            vec3 N = normalize(BONES[int(BONEID_0)] * NORMAL).xyz;
-        #else
-            vec3 N = normalize(BONE * NORMAL).xyz;
-        #endif
-    #else
-        vec3 N = normalize(WORLD * NORMAL).xyz;
-    #endif
+	#ifdef USE_SKINNING
+		#if defined(LARGE_VERTEX_SHADER_UNIFORMS)
+			vec3 N = normalize(BONES[int(BONEID_0)] * NORMAL).xyz;
+		#else
+			vec3 N = normalize(BONE * NORMAL).xyz;
+		#endif
+	#else
+		vec3 N = normalize(WORLD * NORMAL).xyz;
+	#endif
 
-    N.y *= TILE_LIGHT_COLOR.w; //TILE_LIGHT_COLOR.w contains the direction of the light
+	N.y *= TILE_LIGHT_COLOR.w; //TILE_LIGHT_COLOR.w contains the direction of the light
 
-    //take care of double sided polygons on materials without culling
-    #ifdef FLIP_BACKFACES
+	//take care of double sided polygons on materials without culling
+	#ifdef FLIP_BACKFACES
 
-        #ifdef USE_SKINNING
-            #if defined(LARGE_VERTEX_SHADER_UNIFORMS)
-                vec3 viewDir = normalize((BONES[int(BONEID_0)] * POSITION).xyz);
-            #else
-                vec3 viewDir = normalize((BONE * POSITION).xyz);
-            #endif
-        #else
-            vec3 viewDir = normalize((WORLD * POSITION).xyz);
-        #endif
+		#ifdef USE_SKINNING
+			#if defined(LARGE_VERTEX_SHADER_UNIFORMS)
+				vec3 viewDir = normalize((BONES[int(BONEID_0)] * POSITION).xyz);
+			#else
+				vec3 viewDir = normalize((BONE * POSITION).xyz);
+			#endif
+		#else
+			vec3 viewDir = normalize((WORLD * POSITION).xyz);
+		#endif
 
-        if( dot(N,viewDir) > 0.0 ){N *= -1.0;}
+		if( dot(N,viewDir) > 0.0 ){N *= -1.0;}
 
-    #endif	//FLIP_BACKFACES
+	#endif	//FLIP_BACKFACES
 
-    //float yLight = (1.0+N.y) * 0.5;
-    //return yLight*(1.0-AMBIENT) + N.x*N.x*XFAC + N.z*N.z*ZFAC + AMBIENT;
+	//float yLight = (1.0+N.y) * 0.5;
+	//return yLight*(1.0-AMBIENT) + N.x*N.x*XFAC + N.z*N.z*ZFAC + AMBIENT;
 
-    N.xz *= N.xz;
+	N.xz *= N.xz;
 
-    float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
+	float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
 
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
+	float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 
-    return light*light*lit;
+	return light*light*lit;
 
 #else
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
+	float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 	return lit*(0.7+abs(NORMAL.y)*0.3)*(0.9+abs(NORMAL.x)*0.1);
 
 #endif	//FANCY
@@ -111,15 +111,15 @@ void main()
 #ifdef USE_SKINNING
 
 #if defined(LARGE_VERTEX_SHADER_UNIFORMS)
-    POS4 pos = WORLDVIEWPROJ * BONES[int(BONEID_0)] * POSITION;
+	POS4 pos = WORLDVIEWPROJ * BONES[int(BONEID_0)] * POSITION;
 #else
 	POS4 pos = WORLDVIEWPROJ * BONE * POSITION;
 #endif
 #else
-    POS4 pos = WORLDVIEWPROJ * POSITION;
+	POS4 pos = WORLDVIEWPROJ * POSITION;
 #endif
 
-    gl_Position = pos;
+	gl_Position = pos;
 
 int frameIndex = int((COLOR.a*255.0) + 0.5);
 uv.xy = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[frameIndex].zw) + BANNER_UV_OFFSETS_AND_SCALES[frameIndex].xy;
@@ -128,9 +128,7 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 #ifndef DISABLE_TINTING
 	color = BANNER_COLORS[frameIndex];
 	color.a = 1.0;
-	if (frameIndex > 0) {
-		color.a = 0.0;
-	}
+	if(frameIndex > 0){ color.a = 0.0; }
 #endif
 
 #ifdef ENABLE_LIGHT
@@ -144,36 +142,40 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 
 #ifdef ENABLE_FOG
 
-// detections
-bool end = detectEnd();
-bool nether = detectNether();
-bool underWater = detectUnderwater();
-float rainFactor = detectRain(underWater);
+	// detections
+	bool end = detectEnd();
+	bool nether = detectNether();
+	bool underWater = detectUnderwater();
+	float rainFactor = detectRain(underWater);
 
-// nether,end,underwater tint
-if(nether){light.rgb *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);}
-if(end){
-    light.rgb *= vec3(2.1,1.5,2.3);
-    fogColor.rgb = vec3(0.16,0.06,0.2);
-}
-if(underWater){
-    light.rgb *= vec3(0.5,1.4,1.6);
-    #ifndef DISABLE_TINTING
-        light.rgb *= 0.8;
-    #endif
-}
+	// nether,end,underwater tint
+	if(nether){
+		light.rgb *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
+	}
+	if(end){
+		light.rgb *= vec3(2.1,1.5,2.3);
+		fogColor.rgb = vec3(0.16,0.06,0.2);
+	}
+	if(underWater){
+		#ifndef DISABLE_TINTING
+			light.rgb *= vec3(0.4,1.12,1.28);
+		#else
+			light.rgb *= vec3(0.5,1.4,1.6);
+		#endif
+	}
 
-if(rainFactor > 0.0){light.rgb *= 1.0-rainFactor*0.3;}
-	
-    // horizon color
-    vec3 newFog = getHorizonCol(rainFactor);
-    newFog = getHorizonEdgeCol(newFog,rainFactor);
-    if(underWater){newFog = getUnderwaterCol();}
+	if(rainFactor > 0.0){ light.rgb *= 1.0-rainFactor*0.3; }
 
-    float len = pos.z/RENDER_DISTANCE;
+	// horizon color
+	vec3 newFog = getHorizonCol(rainFactor);
+	newFog = getHorizonEdgeCol(newFog,rainFactor);
+	if(underWater){ newFog = getUnderwaterCol(); }
 
-    mistColor = renderMist(newFog, len, TILE_LIGHT_COLOR.x, rainFactor, nether,underWater,end);
-    fogColor = renderFog(newFog, len , nether);
+	float len = pos.z/RENDER_DISTANCE;
+
+	mistColor = renderMist(newFog, len, TILE_LIGHT_COLOR.x, rainFactor, nether,underWater,end);
+	fogColor = renderFog(newFog, len , nether);
 
 #endif //ENABLE_FOG
+
 }

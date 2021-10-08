@@ -10,10 +10,10 @@ const vec3 nightSkyCol = vec3(0.01,0.06,0.1);
 const vec3 skyBaseCol = vec3(0.24,0.52,1.0);
 
 // color - Horizon base color
-const vec3 horizonBaseCol = vec3(1.0,0.2,0.16);
+const vec3 horizonBaseCol = vec3(1.0,0.22,0.18);
 
 // color - Horizon edge color
-const vec3 horizonEdgeCol = vec3(1.0,0.6,0.0);
+const vec3 horizonEdgeCol = vec3(1.0,0.4,0.05);
 
 // color - Underwater fog color
 const vec3 underwaterBaseCol = vec3(0.0,0.6,1.0);

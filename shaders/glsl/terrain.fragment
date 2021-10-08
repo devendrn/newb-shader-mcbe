@@ -23,30 +23,27 @@ varying vec4 mistColor;
 varying lowp float shade;
 
 #ifdef SEASONS
-    varying vec3 sCol;
+	varying vec3 sCol;
 #endif
 
 #ifdef FOG
-    varying float wPosY;
-    varying lowp vec4 wetRefl;
+	varying float wPosY;
+	varying lowp vec4 wetRefl;
 
 // fast boolean normal for top surface (isY)
 bool isTopSurface(float y){
 
-    if(y<0.0){
-        // check for change in Y in frag block
-        return (dFdy(y) < 0.0001);
-    }
-    else{
-        return false;
-    }
+	// check for change in Y in frag block
+	if(y<0.0){ return (dFdy(y) < 0.0001); }
+	else{ return false; }
+
 }
 
 #endif
 
 #if defined(BLEND) || defined(FAR_BLEND)
-    #define MAYBE_WATER
-    varying lowp float water;
+	#define MAYBE_WATER
+	varying lowp float water;
 #endif
 
 #endif	// !BYPASS_PIXEL_SHADER
@@ -65,6 +62,7 @@ void main()
 {
 
 #ifdef BYPASS_PIXEL_SHADER
+
 	gl_FragColor = vec4(0, 0, 0, 0);
 	return;
 
@@ -131,11 +129,11 @@ vec4 inColor = color;
 
 /// apply color and lighting
 #ifdef MAYBE_WATER
-    // ignore water texture and replace it with vertex calculated water
-    if(water>0.5){diffuse = inColor;}
-    else{ diffuse.rgb *= inColor.rgb; }
+	// ignore water texture and replace it with vertex calculated water
+	if(water>0.5){diffuse = inColor;}
+	else{ diffuse.rgb *= inColor.rgb; }
 #else
-    diffuse.rgb *= inColor.rgb;
+	diffuse.rgb *= inColor.rgb;
 #endif
 
 // light glow
@@ -144,14 +142,14 @@ glow *= glow*glow*glow*glow;
 diffuse.rgb *= 1.0 + glow*0.3;
 
 #ifdef FOG
-// wet effect
-if(wetRefl.a > 0.0){
-    // only on xz plane
-    if(isTopSurface(wPosY)){
-        float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
-        diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
-    }
-}
+	// wet effect
+	if(wetRefl.a > 0.0){
+		// only on xz plane
+		if(isTopSurface(wPosY)){
+			float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
+			diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
+		}
+	}
 #endif
 
 // mist,fog
@@ -161,11 +159,10 @@ diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 diffuse.rgb = colorCorrection(diffuse.rgb);
 
 //diffuse.rgb = texture2D(TEXTURE_0, uv0).aaa;
-
 //diffuse.rgb = color.rgb;
 //diffuse.rgb = texture2D(TEXTURE_0, fract(color.rg*0.0625)).rgb;
 
 	gl_FragColor = diffuse;
-	
+
 #endif // BYPASS_PIXEL_SHADER
 }

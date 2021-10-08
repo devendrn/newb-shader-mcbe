@@ -1,9 +1,9 @@
 // __multiversion__
 
 #if __VERSION__ >= 300
-    #define varying in
-    out vec4 FragColor;
-    #define gl_FragColor FragColor
+	#define varying in
+	out vec4 FragColor;
+	#define gl_FragColor FragColor
 #endif
 
 #include "config_utilities/color.h"
@@ -14,15 +14,13 @@ varying vec4 color;
 
 void main()
 {
+	// this cubemap is used to draw over region which skyplane doesn't occupy
 
-// this cubemap is used to draw over region which skyplane doesn't occupy
+	//if( fade < 0.0 )
+	//	discard;
 
-//if( fade < 0.0 )
-//	discard;
+	// gives the position of an imaginary sphere
+	//vec3 spherePos = normalize(pos);
 
-// gives the position of an imaginary sphere
-//vec3 spherePos = normalize(pos);
-
-    gl_FragColor = vec4(colorCorrection(color.rgb),clamp(color.a,0.0,1.0));
-
+	gl_FragColor = vec4(colorCorrection(color.rgb),clamp(color.a,0.0,1.0));
 }

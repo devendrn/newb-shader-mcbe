@@ -1,8 +1,8 @@
 // __multiversion__
 
 #if __VERSION__ >= 300
-    #define attribute in
-    #define varying out
+	#define attribute in
+	#define varying out
 #endif
 
 #include "uniformWorldConstants.h"
@@ -23,26 +23,26 @@ varying vec4 color;
 
 void main()
 {
-    // displaces the skybox
-    vec4 newPos = POSITION;
+	// displaces the skybox
+	vec4 newPos = POSITION;
 
-    // we don't need to render the top half
-    newPos.y += 0.6*float(POSITION.y<0.5);
+	// we don't need to render the top half
+	newPos.y += 0.6*float(POSITION.y<0.5);
 
-    gl_Position = WORLDVIEWPROJ * newPos;
+	gl_Position = WORLDVIEWPROJ * newPos;
 
-    //pos = newPos.xyz;
+	//pos = newPos.xyz;
 
-    // will be clamped in fragment shader
-    color.a = (newPos.y-0.15)*10.0;
+	// will be clamped in fragment shader
+	color.a = (newPos.y-0.15)*10.0;
 
-    // detections
-    bool underWater = detectUnderwater();
-    float rainFactor = detectRain(underWater);
+	// detections
+	bool underWater = detectUnderwater();
+	float rainFactor = detectRain(underWater);
 
-    // horizon color
-    color.rgb = getHorizonCol(rainFactor);
-    color.rgb = getHorizonEdgeCol(color.rgb,rainFactor);
-    if(underWater){color.rgb = getUnderwaterCol();}
+	// horizon color
+	color.rgb = getHorizonCol(rainFactor);
+	color.rgb = getHorizonEdgeCol(color.rgb,rainFactor);
+	if(underWater){ color.rgb = getUnderwaterCol(); }
 
 }

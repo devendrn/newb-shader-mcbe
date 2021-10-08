@@ -3,17 +3,13 @@
 #include "fragmentVersionCentroid.h"
 
 #if __VERSION__ >= 300
-
-#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
-_centroid in highp vec2 uv;
+	#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
+		_centroid in highp vec2 uv;
+	#else
+		_centroid in vec2 uv;
+	#endif
 #else
-_centroid in vec2 uv;
-#endif
-
-#else
-
-varying vec2 uv;
-
+	varying vec2 uv;
 #endif
 
 #include "uniformShaderConstants.h"
@@ -28,31 +24,30 @@ LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 
 void main()
 {
+	#if !defined(TEXEL_AA) || !defined(TEXEL_AA_FEATURE)
+		vec4 diffuse = texture2D( TEXTURE_0, uv );
+	#else
+		vec4 diffuse = texture2D_AA(TEXTURE_0, uv );
+	#endif
 
-#if !defined(TEXEL_AA) || !defined(TEXEL_AA_FEATURE)
-	vec4 diffuse = texture2D( TEXTURE_0, uv );
-#else
-	vec4 diffuse = texture2D_AA(TEXTURE_0, uv );
-#endif
+	float sphereY = pos.y/sqrt(dot(pos.xyz,pos.xyz));
+	float grad = 1.0-max(sphereY,0.0);
+	grad *= grad;
 
-    float sphereY = pos.y/sqrt(dot(pos.xyz,pos.xyz));
-    float grad = 1.0-max(sphereY,0.0);
-    grad *= grad;
+	// end sky gradient
+	vec3 color = horizon_color*smoothstep(0.0,1.0,grad);
 
-    // end sky gradient
-    vec3 color = horizon_color*smoothstep(0.0,1.0,grad);
+	//float streaks = sin((pos.x+pos.z)*6.0);
+	//streaks *= streaks;
+	//streaks *= 1.0-grad;
+	//color *= 1.0-streaks;
 
-    //float streaks = sin((pos.x+pos.z)*6.0);
-    //streaks *= streaks;
-    //streaks *= 1.0-grad;
-    //color *= 1.0-streaks;
+	// stars
+	color += diffuse.rgb*(1.0-grad*grad);
 
-    // stars
-    color += diffuse.rgb*(1.0-grad*grad);
-
-    // end void gradient
-    float glow = max((-sphereY-0.5)*2.0,0.0);
-    color += horizon_color*glow*glow*glow;
+	// end void gradient
+	float glow = max((-sphereY-0.5)*2.0,0.0);
+	color += horizon_color*glow*glow*glow;
 
 	gl_FragColor = vec4(color,1.0);
 }

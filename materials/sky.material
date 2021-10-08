@@ -64,7 +64,8 @@
 
     "vertexShader": "shaders/cubemap.vertex",
     "vrGeometryShader": "shaders/uv.geometry",
-    "fragmentShader": "shaders/cubemap.fragment",    "samplerStates": [
+    "fragmentShader": "shaders/cubemap.fragment",
+    "samplerStates": [
       {
         "samplerIndex": 0,
         "textureFilter": "Point"

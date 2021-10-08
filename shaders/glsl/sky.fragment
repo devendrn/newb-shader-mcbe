@@ -1,9 +1,9 @@
 // __multiversion__
 
 #if __VERSION__ >= 300
-    #define varying in
-    out vec4 FragColor;
-    #define gl_FragColor FragColor
+	#define varying in
+	out vec4 FragColor;
+	#define gl_FragColor FragColor
 #endif
 
 #include "config_utilities/color.h"
@@ -33,13 +33,13 @@ vec3 renderSky(vec3 reddishTint, vec3 horizonColor, vec3 zenithColor, float h){
 
 void main()
 {
-    //vec3 spherePos = normalize(wPos.xyz);
-    float sphereY = max(0.0,wPos.y/sqrt(dot(wPos.xyz,wPos.xyz)));
+	//vec3 spherePos = normalize(wPos.xyz);
+	float sphereY = max(0.0,wPos.y/sqrt(dot(wPos.xyz,wPos.xyz)));
 
-    vec3 skyColor = renderSky(horizon_edge_color,horizon_color,zenith_color,sphereY);
+	vec3 skyColor = renderSky(horizon_edge_color,horizon_color,zenith_color,sphereY);
 
-    // its better to do color correction in vertex but it causes blue sky issue on some devices
-    skyColor = colorCorrection(skyColor);
-    
+	// its better to do color correction in vertex but it causes blue sky issue on some devices
+	skyColor = colorCorrection(skyColor);
+
 	gl_FragColor = vec4(skyColor,1.0);
 }

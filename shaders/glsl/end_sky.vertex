@@ -19,25 +19,24 @@ attribute vec2 TEXCOORD_0;
 
 void main()
 {
-    pos = -POSITION.xyz;
+	pos = -POSITION.xyz;
 
-    vec4 rotatedPos = POSITION;
-    
-    // pi/1800 (one complete rotation per hour)
-    highp float t = 0.00174532925*TOTAL_REAL_WORLD_TIME;
-    
-    // rotate skybox
-    float sinA = sin(t);
-    float cosA = cos(t);
-    mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
-    rotatedPos.xz = rotate*rotatedPos.xz;
+	vec4 rotatedPos = POSITION;
 
-    gl_Position = WORLDVIEWPROJ * rotatedPos;
+	// pi/1800 (one complete rotation per hour)
+	highp float t = 0.00174532925*TOTAL_REAL_WORLD_TIME;
 
-    uv = 0.1*(UV_TRANSFORM * vec4(TEXCOORD_0, 0, 1)).xy;
+	// rotate skybox
+	float sinA = sin(t);
+	float cosA = cos(t);
+	mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
+	rotatedPos.xz = rotate*rotatedPos.xz;
 
-//void_color = colorCorrection(vec3(0.16,0.06,0.2));
-//zenith_color = colorCorrection(vec3(0.03,0.0,0.05));
-horizon_color = colorCorrection(vec3(0.16,0.06,0.2));
+	gl_Position = WORLDVIEWPROJ * rotatedPos;
 
+	uv = 0.1*(UV_TRANSFORM * vec4(TEXCOORD_0, 0, 1)).xy;
+
+	//void_color = colorCorrection(vec3(0.16,0.06,0.2));
+	//zenith_color = colorCorrection(vec3(0.03,0.0,0.05));
+	horizon_color = colorCorrection(vec3(0.16,0.06,0.2));
 }

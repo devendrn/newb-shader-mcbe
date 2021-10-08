@@ -1,8 +1,8 @@
 // __multiversion__
 
 #if __VERSION__ >= 300
-    #define attribute in
-    #define varying out
+	#define attribute in
+	#define varying out
 #endif
 
 #include "uniformWorldConstants.h"
@@ -23,30 +23,31 @@ varying vec3 wPos;
 void main()
 {
 
-vec4 pos = POSITION;
-pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
-gl_Position = WORLDVIEWPROJ * pos;
+	vec4 pos = POSITION;
+	pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
 
-//wPos = (WORLD * pos).xyz;
-wPos = pos.xyz;
-wPos.y += 0.148;
+	gl_Position = WORLDVIEWPROJ * pos;
 
-// detections
-bool underWater = detectUnderwater();
-float rainFactor = detectRain(underWater);
+	//wPos = (WORLD * pos).xyz;
+	wPos = pos.xyz;
+	wPos.y += 0.148;
 
-// sky colors
-zenith_color = getZenithCol(rainFactor);
-horizon_color = getHorizonCol(rainFactor);
-horizon_edge_color = getHorizonEdgeCol(horizon_color,rainFactor);
+	// detections
+	bool underWater = detectUnderwater();
+	float rainFactor = detectRain(underWater);
 
-// underwater sky
-if(underWater){
-    vec3 fogcol = getUnderwaterCol();
-    zenith_color = fogcol;
-    horizon_color = fogcol;
-    horizon_edge_color = fogcol;
-    //zenith_color,horizon_color,horizon_edge_color = getUnderwaterCol();
-}
+	// sky colors
+	zenith_color = getZenithCol(rainFactor);
+	horizon_color = getHorizonCol(rainFactor);
+	horizon_edge_color = getHorizonEdgeCol(horizon_color,rainFactor);
+
+	// underwater sky
+	if(underWater){
+		vec3 fogcol = getUnderwaterCol();
+		zenith_color = fogcol;
+		horizon_color = fogcol;
+		horizon_edge_color = fogcol;
+		//zenith_color,horizon_color,horizon_edge_color = getUnderwaterCol();
+	}
 
 }

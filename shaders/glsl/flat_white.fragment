@@ -1,14 +1,14 @@
 // __multiversion__
 
 #if __VERSION__ >= 300
-    out vec4 FragColor;
-    #define gl_FragColor FragColor
+	out vec4 FragColor;
+	#define gl_FragColor FragColor
 #endif
 
 #include "config_utilities/extra.h"
 
 void main()
 {
-    // touch circle overlay
+	// touch circle overlay
 	gl_FragColor = vec4(vec3(circle_invert_value),1.0);
 }

@@ -9,7 +9,6 @@
 #include "utilities/detectors.glsl"
 #include "config_utilities/sky.h"
 #include "config_utilities/mist_fog.h"
-
 #include "config_utilities/global.h"
 
 #ifdef USE_SKINNING
@@ -25,13 +24,13 @@ attribute vec4 NORMAL;
 #if defined(USE_SKINNING)
 
 #ifdef MCPE_PLATFORM_NX
-    attribute uint BONEID_0;
+	attribute uint BONEID_0;
 #else
-    attribute float BONEID_0;
+	attribute float BONEID_0;
 #endif
 
-    varying lowp vec3 oPos1;
-    varying lowp vec3 oPos2;
+	varying lowp vec3 oPos1;
+	varying lowp vec3 oPos2;
 
 #endif
 
@@ -77,19 +76,19 @@ float lightIntensity(vec4 position, vec4 normal) {
 	//take care of double sided polygons on materials without culling
 	#ifdef FLIP_BACKFACES
 		vec3 viewDir = normalize((WORLD * position).xyz);
-        N *= -sign(dot(N, viewDir));
+		N *= -sign(dot(N, viewDir));
 	#endif
 
-    N.xz *= N.xz;
+	N.xz *= N.xz;
 
-    float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
+	float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
 
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
+	float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 
-    return light*light*lit;
+	return light*light*lit;
 
 #else
-    float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
+	float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 	return lit*(0.7+abs(NORMAL.y)*0.3)*(0.9+abs(NORMAL.x)*0.1);
 
 #endif
@@ -208,41 +207,39 @@ mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
 
 // nether,end,underwater tint
 if(nether){
-    light.rgb *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
+	light.rgb *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
 }
 if(end){ 
-    light.rgb *= vec3(2.1,1.5,2.3);
-    fogColor.rgb = vec3(0.16,0.06,0.2);
+	light.rgb *= vec3(2.1,1.5,2.3);
+	fogColor.rgb = vec3(0.16,0.06,0.2);
 }
 if(underWater){
-    light.rgb *= vec3(0.5,1.4,1.6);
+	light.rgb *= vec3(0.5,1.4,1.6);
 
-    highp float t = TIME;
-    float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
-    light.rgb += vec3(1.5,3.0,3.3)*caustic;
+	highp float t = TIME;
+	float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
+	light.rgb += vec3(1.5,3.0,3.3)*caustic;
 }
 
 // wet effect
+wetRefl.a = 0.0;
 if(rainFactor>0.0){
+	if(pos.z < 30.0){
+	vec3 wPos = (WORLD * entitySpacePosition).xyz;
+	vec3 nrm = normalize((WORLD * entitySpaceNormal).xyz);
+	if(nrm.y>0.0){
+		float viewDirY = wPos.y/sqrt(dot(wPos.xyz,wPos.xyz));
 
-    wetRefl.a = 0.0;
-    if(pos.z < 30.0){
-    vec3 wPos = (WORLD * entitySpacePosition).xyz;
-    vec3 nrm = normalize((WORLD * entitySpaceNormal).xyz);
-    if(nrm.y>0.0){
-        float viewDirY = wPos.y/sqrt(dot(wPos.xyz,wPos.xyz));
-        
-        float cosR = nrm.y*(1.0-abs(viewDirY));
+		float cosR = nrm.y*(1.0-abs(viewDirY));
 
-        float fresnel = cosR*cosR;
-        fresnel *= fresnel*cosR;
+		float fresnel = cosR*cosR;
+		fresnel *= fresnel*cosR;
 
-        wetRefl.rgb = newFog;
-        wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
-    }
-    }
-
-}else{wetRefl.a = 0.0;}
+		wetRefl.rgb = newFog;
+		wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
+	}
+	}
+}
 
 //light.rgb = TILE_LIGHT_COLOR.zzz;
 

@@ -10,7 +10,7 @@
 #define FOG_TYPE 2
 
 // Value - Density of mist
-#define mist_density 0.15
+#define mist_density 0.2
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
@@ -25,15 +25,15 @@ vec4 renderMist(vec3 fog, float dist, float lit, float rain, bool nether, bool u
 	float density = mist_density;
 	if(!(nether||end)){
 		// increase density based on darkness
-		density += density*(0.99-FOG_COLOR.b)*18.0;
+		density += density*(0.99-FOG_COLOR.g)*18.0;
 	}
 
 	vec4 mist;
-	if(!nether){
-		mist.rgb = fog*vec3(1.0,1.2-0.2*rain,1.4-0.4*rain);
+	if(nether){
+		mist.rgb = mix(fog*1.3,vec3(2.1,0.7,0.2), lit);
 	}
 	else{
-		mist.rgb = mix(fog*1.4,vec3(2.1,0.7,0.2), lit);
+		mist.rgb = fog*vec3(1.0,1.1-0.1*rain,1.4-0.4*rain);
 	}
 
 	// exponential mist
@@ -52,14 +52,14 @@ vec4 renderFog(vec3 fogColor, float len, bool nether){
 #if FOG_TYPE > 0
 
 	vec4 fog;
-	if(!nether){fog.rgb = fogColor;}
-	else{
+	if(nether){
 		// inverse color correction
 		fog.rgb = FOG_COLOR.rgb;
 		fog.rgb = pow(fog.rgb,vec3(1.37));
 		vec3 w = vec3(0.7966);
 		fog.rgb = fog.rgb*(w + fog.rgb)/(w + fog.rgb*(vec3(1.0) - w));
 	}
+	else{ fog.rgb = fogColor; }
 
 	fog.a = clamp( (len -  FOG_CONTROL.x)/(FOG_CONTROL.y - FOG_CONTROL.x), 0.0, 1.0);
 
