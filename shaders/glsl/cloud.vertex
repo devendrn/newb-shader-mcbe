@@ -57,11 +57,11 @@ void main()
 
 	color.a *= cloud_alpha;
 
-	#ifdef ENABLE_AURORA
+	#ifdef AURORA
 		vec4 auroras = renderAurora(0.05*worldPos.xz,t,rain);
 		auroras *= max(1.0-(1.7*color.a),0.0);
 		auroras *= 1.0-min(4.5*max(FOG_COLOR.r,FOG_COLOR.b),1.0);
-
+		auroras.rgb *= AURORA;
 		color += auroras;
 	#endif
 

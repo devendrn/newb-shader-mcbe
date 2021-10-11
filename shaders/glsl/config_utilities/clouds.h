@@ -3,13 +3,10 @@
 /*""""""""""""""""""""""""""""""""""""""*/
 /* SMOOTH CLOUDS */
 
-//️ Value - Number of clouds (not implemented)
-//#define cloud_frequency 0.7
-
-// Cloud size when raining (0-1)
+// Value - Cloud size when raining (0-1)
 #define rain_cloud_size 0.9
 
-// Normal cloud size (0-1)
+// Value - Normal cloud size (0-1)
 #define normal_cloud_size 0.3
 
 // Value - Cloud map size (0-100)
@@ -31,10 +28,8 @@
 /* AURORA EFFECT */
 
 //️ Toggle - Enable aurora effect for night sky
-#define ENABLE_AURORA
-
 //️ Value - Aurora borealis brightness
-#define aurora_intensity 1.0
+#define AURORA 1.0
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
@@ -117,5 +112,5 @@ vec4 renderAurora(vec2 uv, highp float t, float rain){
 		0.0,
 		(1.0-auroraCol)*aurora,
 		auroraCol*aurora,
-		aurora*aurora*(0.5-0.5*rain) )*aurora_intensity;
+		aurora*aurora*(0.5-0.5*rain) );
 }

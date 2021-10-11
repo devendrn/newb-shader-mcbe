@@ -598,14 +598,14 @@ if(isWater){
 
 #ifdef UNDERWATER
 
-	// top waving refraction
-	if(uv1.y > 0.93){
-		float intensity = clamp(wPos.y/8.0, 0.0, 20.0);
-		gl_Position.xy += vec2(intensity*0.15*sin(t*2.0 + dot(wPos.xyz,vec3(0.1)) + dot(cPos.xyz,vec3(rd)) ));
-	}
-
 	#ifdef UNDERWATER_WAVE
-		gl_Position.xy += vec2(UNDERWATER_WAVE*min(0.06*pos.z,0.6)*sin(t*1.1 + dot(cPos.xyz,vec3(rd))));
+		gl_Position.xy += vec2(UNDERWATER_WAVE*min(0.05*pos.z,0.6)*sin(t*1.2 + dot(cPos,vec3(rd))));
+	#endif
+
+	#ifdef WAVE_ABOVE_WATER
+	if(uv1.y > 0.93){	// top waving refraction
+		gl_Position.xy += vec2(min(wPos.y*0.012,1.5)*sin(t*1.8 + dot(wPos,vec3(0.1)) + dot(cPos,vec3(rd)) ));
+	}
 	#endif
 
 	// soft caustic effect

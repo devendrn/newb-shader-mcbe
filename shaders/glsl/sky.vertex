@@ -9,9 +9,11 @@
 
 uniform vec4 FOG_COLOR;
 uniform vec2 FOG_CONTROL;
-uniform float RENDER_DISTANCE;
+uniform float RENDER_DISTANCE;
+
 #include "utilities/detectors.glsl"
-#include "config_utilities/sky.h"
+#include "config_utilities/sky.h"
+
 attribute mediump vec4 POSITION;
 attribute vec4 COLOR;
 
@@ -22,7 +24,6 @@ varying vec3 wPos;
 
 void main()
 {
-
 	vec4 pos = POSITION;
 	pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
 
@@ -49,5 +50,4 @@ void main()
 		horizon_edge_color = fogcol;
 		//zenith_color,horizon_color,horizon_edge_color = getUnderwaterCol();
 	}
-
 }
