@@ -10,7 +10,7 @@
 #define FOG_TYPE 2
 
 // Value - Density of mist
-#define mist_density 0.2
+#define mist_density 0.19
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
@@ -30,7 +30,8 @@ vec4 renderMist(vec3 fog, float dist, float lit, float rain, bool nether, bool u
 
 	vec4 mist;
 	if(nether){
-		mist.rgb = mix(fog*1.3,vec3(2.1,0.7,0.2), lit);
+		mist.rgb = FOG_COLOR.rgb;
+		mist.rgb = mix(2.6*mist.rgb*mist.rgb,vec3(2.1,0.7,0.2),lit*0.7);
 	}
 	else{
 		mist.rgb = fog*vec3(1.0,1.1-0.1*rain,1.4-0.4*rain);
@@ -70,9 +71,7 @@ vec4 renderFog(vec3 fogColor, float len, bool nether){
 	return fog;
 
 #else
-
 	return vec4(0.0);
-
 #endif
 
 

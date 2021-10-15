@@ -22,7 +22,7 @@
 //#define GOD_RAYS
 
 // Value - Intensity of soft shadow (0-1)
-#define shadow_intensity 0.7
+#define shadow_intensity 0.77
 
 // Value - Night extra brightness
 #define night_brightness 0.4
@@ -32,7 +32,7 @@
 
 // Color - Top light color
 const vec3 morning_color = vec3(1.0,0.45,0.14);
-const vec3 noon_color = vec3(1.0,0.75,0.6);
+const vec3 noon_color = vec3(1.0,0.85,0.7);
 const vec3 night_color = vec3(0.4,0.6,1.0);
 
 // Color - Torch light color
@@ -87,8 +87,8 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 #define water_bump 0.07
 
 // Color - Water color
-const vec3 sea_water_color = vec3(0.17,0.65,0.9);
-const vec3 fresh_water_color = vec3(0.1,0.6,0.65);
+const vec3 sea_water_color = vec3(0.13,0.65,0.87);
+const vec3 fresh_water_color = vec3(0.07,0.55,0.55);
 const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 
 /*""""""""""""""""""""""""""""""""""""""*/
@@ -108,7 +108,7 @@ const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 #define underwater_brightness 0.8
 
 // Value - Underwater soft caustic intensity
-#define caustic_intensity 1.9
+#define caustic_intensity 2.5
 
 // Color - Underwater lighting color
 const vec3 underwater_color = vec3(0.2,0.6,1.0);

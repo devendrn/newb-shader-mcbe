@@ -240,7 +240,7 @@ if(nether || end){
 	if(end){
 		light = vec3(1.98,1.25,2.3);
 	}else{
-		light = vec3(1.65,1.2,1.05);
+		light = vec3(1.98,1.44,1.26);
 	}
 
 	// torch light
@@ -249,7 +249,7 @@ if(nether || end){
 else{
 	// overworld lighting
 
-	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + 1.5*rainFactor),1.0);
+	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + rainFactor),1.0);
 	float nightFactor = 1.0-dayFactor*dayFactor;
 	float lightIntensity = sun_intensity*(1.0 - rainFactor*FOG_COLOR.g)*(1.0 + night_brightness*nightFactor);
 
@@ -257,7 +257,7 @@ else{
 	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y));
 
 	// sky ambient
-	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3+4.0*nightFactor));
+	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - FOG_COLOR.g*rainFactor));
 
 	// shadow from top light
 	float shadow = float(uv1.y > 0.876);
@@ -274,7 +274,7 @@ else{
 
 	// direct light from top
 	float dirLight = shadow*(1.0-uv1.x*nightFactor);
-	dirLight += 0.45*shade*lit.y*(1.2-shadow);
+	dirLight += 0.3*shade*lit.y*(1.2-shadow);
 	light += (dirLight*lightIntensity)*sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
 
 	// torch light
@@ -526,7 +526,7 @@ if(isWater){
 		sunRefl *= sunRefl*sunRefl;
 		sunRefl *= sunRefl;
 		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
-		waterRefl += 2.5*horizonEdgeCol*sunRefl;
+		waterRefl += (horizonEdgeCol.r*sunRefl)*vec3(2.5,1.6,0.8);
 
 		// cloud reflection
 		#if defined(FANCY) && defined(CLOUD_REFLECTION)
@@ -568,22 +568,21 @@ if(isWater){
 	// reflection for side plane
 	else{
 		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
-		cosR += water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
+		cosR += (1.0-cosR*cosR)*water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
 
 		waterRefl = zenithCol*(lit.y*1.3);
 	}
 
-	float fresnel = calculateFresnel(min(cosR,1.0),0.03);
+	float fresnel = calculateFresnel(cosR,0.03);
 
+	float opacity = 1.0-cosR;
 	#ifdef USE_ANGLE_BLEND_FADE
-		color.a = getWaterAlpha(COLOR.rgb);
-		color.a += (1.0-cosR)*(1.0-color.a);
+		color.a = getWaterAlpha(COLOR.rgb) + opacity*(1.0-color.a);
 	#else
-		color.a = min(color.a + (fresnel*0.6),1.0);
-		//color.a = color.a + (1.0-color.a)*fresnel;
+		color.a = color.a + (1.0-color.a)*opacity*opacity;
 	#endif
 
-	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel*0.9;
+	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel;
 
 }	//isWater
 
@@ -612,7 +611,7 @@ if(isWater){
 	if(uv1.y < 0.9){
 		vec3 underWaterColor = mix(underwater_color,vec3(1.0),lit.y*0.7);
 
-		light = underWaterColor*((light*1.3)+vec3(underwater_brightness));
+		light = underWaterColor*(light*0.7 + vec3(underwater_brightness));
 
 		float caustics = disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
 		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
