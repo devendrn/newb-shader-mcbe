@@ -22,7 +22,7 @@
 //#define GOD_RAYS
 
 // Value - Intensity of soft shadow (0-1)
-#define shadow_intensity 0.77
+#define shadow_intensity 0.7
 
 // Value - Night extra brightness
 #define night_brightness 0.4

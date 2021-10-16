@@ -249,15 +249,16 @@ if(nether || end){
 else{
 	// overworld lighting
 
-	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + rainFactor),1.0);
+	float dayFactor = min(dot(FOG_COLOR.rgb,vec3(0.5,0.4,0.4))*(1.0 + 1.9*rainFactor),1.0);
 	float nightFactor = 1.0-dayFactor*dayFactor;
-	float lightIntensity = sun_intensity*(1.0 - rainFactor*FOG_COLOR.g)*(1.0 + night_brightness*nightFactor);
+	float rainDim = min(FOG_COLOR.g,0.25)*rainFactor;
+	float lightIntensity = sun_intensity*(1.0 - rainDim)*(1.0 + night_brightness*nightFactor);
 
 	// min ambient in caves
 	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y));
 
 	// sky ambient
-	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - FOG_COLOR.g*rainFactor));
+	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - rainDim));
 
 	// shadow from top light
 	float shadow = float(uv1.y > 0.876);
@@ -269,12 +270,12 @@ else{
 	// make shadow a bit softer and more softer when raining
 	shadow += (0.2+0.3*rainFactor)*(1.0-shadow)*float(uv1.y > 0.85);
 
-	shadow = max(shadow,(shadowIntensity + (0.7*shadow_intensity*nightFactor))*lit.y);
+	shadow = max(shadow,(shadowIntensity + (0.6*shadow_intensity*nightFactor))*lit.y);
 	shadow *= 0.8 + 0.2*float(shade>0.8);
 
 	// direct light from top
 	float dirLight = shadow*(1.0-uv1.x*nightFactor);
-	dirLight += 0.3*shade*lit.y*(1.2-shadow);
+	dirLight += 0.4*lit.y*uv1.y*(1.2-shadow);
 	light += (dirLight*lightIntensity)*sunLightTint(night_color,morning_color,noon_color,dayFactor,rainFactor);
 
 	// torch light

@@ -8,7 +8,8 @@ const vec3 nightSkyCol = vec3(0.01,0.06,0.1);
 
 // color - Sky base color
 const vec3 skyBaseCol = vec3(0.15,0.45,1.0);
-// value - Day sky clarity (0-1)
+
+// value - Day sky clarity (0-1)
 const float daySkyClarity = 0.3;
 
 // color - Sunrise base color
@@ -46,10 +47,9 @@ vec3 getZenithCol(float rainFactor){
 	zenithCol += nightSkyCol*(0.4-0.4*FOG_COLOR.b);
 
 	// rain sky
-	float brightness = FOG_COLOR.g*FOG_COLOR.g*13.2;
+	float brightness = min(FOG_COLOR.g,0.26);
+	brightness *= brightness*13.2;
 	zenithCol = mix(zenithCol*(1.0+0.5*rainFactor),vec3(0.85,0.9,1.0)*brightness,rainFactor);
-
-	zenithCol = min(zenithCol,vec3(0.85,0.9,1.0)*(5.0-3.5*rainFactor));
 
 	return zenithCol;
 }
@@ -72,9 +72,9 @@ vec3 getHorizonCol(float rainFactor){
 		val*val);
 
 	// rain horizon
-	horizonCol = mix(horizonCol,vec3(FOG_COLOR.g*FOG_COLOR.g*19.5),rainFactor);
-
-	horizonCol = min(horizonCol,5.0-1.8*rainFactor);
+	float brightness = min(FOG_COLOR.g,0.26);
+	brightness *= brightness*19.6;
+	horizonCol = mix(horizonCol,vec3(brightness),rainFactor);
 
 	return horizonCol;
 }

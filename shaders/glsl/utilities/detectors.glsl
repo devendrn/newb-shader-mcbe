@@ -58,6 +58,7 @@ float detectRain(bool underWater){
 		//factor = facSqr*(3.0 - 2.0*factor);
 
 		factor *= 1.0-clamp((FOG_CONTROL.x-0.24)/(fogStart-0.24),0.0,1.0);
+
 		return factor;
 	}
 	else{
