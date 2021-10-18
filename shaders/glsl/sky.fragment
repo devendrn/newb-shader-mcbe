@@ -22,7 +22,7 @@ vec3 renderSky(vec3 reddishTint, vec3 horizonColor, vec3 zenithColor, float h){
 	// gradient 1  h^16
 	// gradient 2  h^8 mix h^2
 	float gradient1 = hsq*hsq*hsq*hsq;
-	float gradient2 = 0.5*(gradient1 + hsq);
+	float gradient2 = 0.6*gradient1 + 0.4*hsq;
 	gradient1 *= gradient1;
 
 	horizonColor = mix(horizonColor, reddishTint, gradient1);
