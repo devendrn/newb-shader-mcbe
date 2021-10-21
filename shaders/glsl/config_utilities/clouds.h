@@ -12,6 +12,9 @@
 // Value - Cloud map size (0-100)
 #define cloud_noise_size 36.0
 
+// Value - Cloud depth (0-3)
+#define cloud_depth 1.3
+
 // Value - Cloud movement speed
 #define cloud_speed 0.04
 
@@ -19,7 +22,7 @@
 #define cloud_shadow 0.54
 
 // Value - Cloud transparency (0-1)
-#define cloud_alpha 1.0
+#define cloud_alpha 0.8
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
@@ -79,7 +82,7 @@ float cloudNoise2D(vec2 p, highp float t, float rain){
 // simple cloud
 vec4 renderClouds(vec4 color, vec2 uv, highp float t, float rain){
 
-	float cloudAlpha = cloudNoise2D(uv,t,rain)*0.8;
+	float cloudAlpha = cloudNoise2D(uv,t,rain);
 	float cloudShadow = cloudNoise2D(uv,(t+0.16),rain)*0.2;
 
 	cloudAlpha = max(cloudAlpha-cloudShadow,0.0);

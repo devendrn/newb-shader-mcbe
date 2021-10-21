@@ -28,7 +28,7 @@ void main()
 	vec4 newPos = POSITION;
 	newPos.y *= 0.1;
 	float len = length(worldPos.xz)*0.004;
-	newPos.y -= len*len*sign(worldPos.y);
+	newPos.y -= len*len*clamp(0.2*worldPos.y,-1.0,1.0);
 
 	POS4 pos = WORLDVIEWPROJ * newPos;
 
@@ -53,7 +53,7 @@ void main()
 	color.rgb = mix(color.rgb,color.ggg*FOG_COLOR.g*3.5,rain*0.8);
 
 	// cloud depth
-	gl_Position.y += color.a*10.0;
+	gl_Position.y += color.a*cloud_depth*(10.0-7.0*rain);
 
 	color.a *= cloud_alpha;
 

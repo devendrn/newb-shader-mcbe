@@ -11,9 +11,6 @@
 // 4 - Uncharted 2
 #define TONEMAPPING_TYPE 3
 
-// Toggle - Increase exposure based on fog color
-//#define ADAPTIVE_BRIGHTNESS
-
 // Toggle + Value - Exposure
 //#define EXPOSURE 1.3
 
@@ -24,7 +21,7 @@
 //#define SATURATION 1.4
 
 // Toggle + Color - Tinting
-//#define TINT vec3(1.0,0.8,0.4)
+//#define TINT vec3(1.0,0.75,0.5)
 
 
 /*""""""""""""""""""""""""""""""""""""""*/
@@ -32,10 +29,6 @@
 
 // Code starts here - Users shouldn't mess down here
 // Color correction and tone mapping
-
-#ifdef ADAPTIVE_BRIGHTNESS
-	uniform vec4 FOG_COLOR;
-#endif
 
 // see https://64.github.io/tonemapping/
 
@@ -95,10 +88,6 @@ vec3 colorCorrection(vec3 color){
 		color *= EXPOSURE;
 	#endif
 
-	#ifdef ADAPTIVE_BRIGHTNESS
-		color *= 2.0 - dot(FOG_COLOR.rgb,vec3(0.35,0.25,0.5));
-	#endif
-
 	color = tonemap(color);
 
 	// actually supposed to be gamma correction
@@ -109,7 +98,7 @@ vec3 colorCorrection(vec3 color){
 	#endif
 
 	#ifdef TINT
-	color *= TINT;
+		color *= TINT;
 	#endif
 
 	return color;

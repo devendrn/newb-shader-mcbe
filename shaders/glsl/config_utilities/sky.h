@@ -62,13 +62,13 @@ vec3 getHorizonCol(float rainFactor){
 	float sun = max(FOG_COLOR.r-FOG_COLOR.b,0.0);
 
 	// horizon color
-	vec3 horizonCol = horizonBaseCol*(((0.7*val*val) + (0.4*val) + sun)*2.5);
+	vec3 horizonCol = horizonBaseCol*(((0.7*val*val) + (0.4*val) + sun)*2.4);
 
 	horizonCol += nightSkyCol;
 
 	horizonCol = mix(
 		horizonCol,
-		2.1*val*mix(vec3(0.7,1.0,0.9),skyBaseCol,daySkyClarity),
+		2.0*val*mix(vec3(0.7,1.0,0.9),skyBaseCol,daySkyClarity),
 		val*val);
 
 	// rain horizon
