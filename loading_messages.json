@@ -1,33 +1,33 @@
 {
-  "loading_messages": [
+"loading_messages":[
 
-    "Newb - short for newbie",
-    "Newb shader was originally called Noob shader, isn't that stupid?",
+	"Newb - short for newbie",
+	"Newb shader was originally called Noob shader, isn't that stupid?",
 
-    "This shader still has many bugs...",
-    "Aesthetically pleasing and lightweight...",
-    "Many subtle changes!",
-    "3D Moon Texture! Wow!",
-    "Enjoy those relaxing and clean colors...",
-    "Entities have a subtle gradient on them",
-    "Hanging lantern swings! Something RTX shaders don't do!",
-    "Have you tried Worldwidebrine's shadow script? It's pretty cool!",
+	"This shader still has many bugs...",
+	"Aesthetically pleasing and lightweight...",
+	"Many subtle changes!",
+	"3D Moon Texture! Wow!",
+	"Enjoy those relaxing and clean colors...",
+	"Entities have a subtle gradient on them",
+	"Hanging lantern swings!",
+	"Have you tried Worldwidebrine's shadow script? It's pretty cool!",
 
-    "Your feedback makes Newb shader better!",
-    "Newb Shader has a discord channel now! discord.gg/Cc4qsgHcYm",
-    "Renderdragon is coming! Shader support is going to end very soon!",
-    "Newb Shader is nearing it's end...",
+	"Your feedback makes Newb shader better!",
+	"Newb Shader has a discord server - discord.gg/Cc4qsgHcYm",
+	"Renderdragon is coming! Shader support might end very soon!",
+	"Newb Shader is nearing it's end...",
 
-    "You can customize Newb shader from it's config files",
-    "Don't like the water color? You can change it in config file",
-    "You can rotate the sun from config file!",
-    "There are many options for you to configure from files",
+	"You can customize Newb shader from it's config files",
+	"Don't like the water color? You can change it in config file",
+	"You can rotate the sun from config file!",
+	"There are many options for you to configure from files",
 
-    "VeteranDev...? Who is that?",
-    "Feel free to DM the creator at discord: VeteranDev#2969",
+	"VeteranDev...? Who is that?",
+	"Feel free to DM the creator at discord: VeteranDev#2969",
 
-    "Newb shader received support from many users and some shader devs!",
-    "Bravo6, HendricK sHaDoW, TatsuyaHikki, ggVictor, GroundBeefmc, Dhiika",
-    "YamaRin's Basement is a great discord server with many creators and players!"
-  ]
+	"Newb shader received support from many users and some shader devs!",
+	"Bravo6, HendricK sHaDoW, TatsuyaHikki, ggVictor, GroundBeefmc, Dhiika",
+	"YamaRin's Basement is a great discord server with many creators and players!"
+]
 }

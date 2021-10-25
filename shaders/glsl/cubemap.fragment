@@ -16,9 +16,6 @@ void main()
 {
 	// this cubemap is used to draw over region which skyplane doesn't occupy
 
-	//if( fade < 0.0 )
-	//	discard;
-
 	// gives the position of an imaginary sphere
 	//vec3 spherePos = normalize(pos);
 

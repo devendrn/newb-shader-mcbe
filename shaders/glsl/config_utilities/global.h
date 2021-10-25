@@ -14,7 +14,7 @@
 /* LIGHTING */
 
 // Value - Sunlight brightness
-#define sun_intensity 3.0
+#define sun_intensity 2.95
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

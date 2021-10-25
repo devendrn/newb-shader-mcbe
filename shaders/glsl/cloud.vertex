@@ -69,4 +69,5 @@ void main()
 	float depth = length(worldPos.xyz)*0.002;
 	float fade = 1.0 - clamp((depth-0.5)*2.0,0.0,1.0);
 	color.a *= fade;
+
 }

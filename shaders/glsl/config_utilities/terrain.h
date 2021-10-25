@@ -25,15 +25,15 @@
 #define shadow_intensity 0.7
 
 // Value - Night extra brightness
-#define night_brightness 0.4
+#define night_brightness 0.1
 
 // Value - Torch brightness
 #define torch_intensity 1.0
 
 // Color - Top light color
 const vec3 morning_color = vec3(1.0,0.45,0.14);
-const vec3 noon_color = vec3(1.0,0.85,0.7);
-const vec3 night_color = vec3(0.4,0.6,1.0);
+const vec3 noon_color = vec3(1.0,0.77,0.6);
+const vec3 night_color = vec3(0.5,0.64,1.0);
 
 // Color - Torch light color
 const vec3 torch_color = vec3(1.0,0.52,0.18);
@@ -53,9 +53,9 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 #define LANTERN_WAVE 0.08
 
 // Toggle - Non-transparent leaves wave (might cause white lines at edges)
-#define ALL_LEAVES_WAVE
+//#define ALL_LEAVES_WAVE
 
-// Toggle - Extra plants Wave for 1.17.10,1.17,11 (won't work with add-ons which add new blocks)
+// Toggle - Extra plants Wave for 1.17.10-1.17.30 (won't work with add-ons which add new blocks)
 //#define EXTRA_PLANTS_WAVE
 
 // Value - Wave animation speed (Plants,leaves)
@@ -114,6 +114,5 @@ const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 const vec3 underwater_color = vec3(0.2,0.6,1.0);
 
 /*""""""""""""""""""""""""""""""""""""""*/
-
 
 

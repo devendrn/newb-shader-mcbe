@@ -10,7 +10,7 @@
 #define FOG_TYPE 2
 
 // Value - Density of mist
-#define mist_density 0.19
+#define mist_density 0.18
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
