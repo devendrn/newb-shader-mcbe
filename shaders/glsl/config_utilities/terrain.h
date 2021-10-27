@@ -74,9 +74,6 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Value - Wave intensity of water surface
 #define WATER_WAVE 0.02
 
-// Toggle - Cloud reflection on water
-#define CLOUD_REFLECTION
-
 // Toggle - Use only surface angle for water transparency fade (gives more transparency)
 //#define USE_ANGLE_BLEND_FADE
 

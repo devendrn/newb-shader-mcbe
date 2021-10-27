@@ -66,6 +66,11 @@ bool is(float val,float val1,float val2){
 	return (val>val1 && val<val2);
 }
 
+// simple 1D noise - used in plants wave
+float noise1D(float x){
+	return cos(x)*cos(x*3.0)*cos(x*5.0) + 1.0;
+}
+
 // water transparency
 float getWaterAlpha(vec3 color){
 	// swamp, fresh 
@@ -531,32 +536,8 @@ if(isWater){
 		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
 		waterRefl += (horizonEdgeCol.r*sunRefl)*vec3(2.5,1.6,0.8);
 
-		// cloud reflection
-		#if defined(FANCY) && defined(CLOUD_REFLECTION)
-
-			vec2 parallax = viewDir.xz/viewDir.y;
-			vec2 projectedPos = (0.7*wPos.xz*cloud_size) - parallax;
-
-			float fade = 0.1*length(projectedPos);
-			fade = (1.0 - clamp((fade-0.5)*2.0,0.0,1.0))*float(wPos.y<0.0);
-
-			projectedPos += ((1.0-fade) - bump)*parallax;
-
-			float renderedClouds = cloudNoise2D(projectedPos,t,rainFactor);
-
-			vec3 cloudColor = waterRefl.ggg+mix(vec3(1.0,0.5,0.2),vec3(1.0),FOG_COLOR.g*1.1)*FOG_COLOR.g;
-			cloudColor = mix(cloudColor,vec3(2.1)*FOG_COLOR.g,rainFactor);
-
-			waterRefl = mix(waterRefl,cloudColor,renderedClouds*fade*0.9);
-
-		#endif
-
-		// sky,cloud reflection mask
+		// sky reflection mask
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
-
-		//float isFreshWater = max((0.4-abs(COLOR.g-0.5))*2.5,0.0);
-		//float obstacle = 0.13*(0.5+0.5*sin(viewDir.x*8.0)*sin(viewDir.z*8.0));
-		//waterRefl *= vec3(0.4+0.6*smoothstep(obstacle,0.1+obstacle,max(viewDir.y,0.0)));
 
 		// ambient,torch light reflection
 		waterRefl += vec3(0.02*(1.0-uv1.y)) + torch_color*torch_intensity*(0.6*float(uv1.x>0.83) + lit.x*bump*10.0);
@@ -648,10 +629,10 @@ if(rainFactor > 0.0){
 	mistColor.a *= 1.0-rainFactor*fogGradient;
 
 	// humid air blow
-	float humidAir = clamp(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0,1.0);
-	humidAir *= rainFactor*lit.y*lit.y;
-	mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
-	mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
+	//float humidAir = clamp(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0,1.0);
+	//humidAir *= rainFactor*lit.y*lit.y;
+	//mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
+	//mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
 
 	// wet effect
 	float endDist = RENDER_DISTANCE*0.6;
