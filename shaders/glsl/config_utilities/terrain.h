@@ -55,14 +55,8 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Toggle - Non-transparent leaves wave (might cause white lines at edges)
 //#define ALL_LEAVES_WAVE
 
-// Toggle - Extra plants Wave for 1.17.10-1.17.30 (won't work with add-ons which add new blocks)
-//#define EXTRA_PLANTS_WAVE
-
 // Value - Wave animation speed (Plants,leaves)
 #define wave_speed 2.6
-
-// Value - Rainy wind blow transparency (0-0.3)
-#define rain_blow_opacity 0.19
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
@@ -73,9 +67,6 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Toggle - Water wave
 // Value - Wave intensity of water surface
 #define WATER_WAVE 0.02
-
-// Toggle - Use only surface angle for water transparency fade (gives more transparency)
-//#define USE_ANGLE_BLEND_FADE
 
 // Value - Water transparency (0-1)
 #define water_transparency 0.47

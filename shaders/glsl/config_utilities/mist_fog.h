@@ -3,11 +3,8 @@
 /*""""""""""""""""""""""""""""""""""""""*/
 /* FOG & MIST */
 
-// Type - Fog type
-// 0 - Off
-// 1 - Vanilla fog
-// 2 - Smoother vanilla fog (Default)
-#define FOG_TYPE 2
+// Toggle - Enable Fog
+#define TERRAIN_FOG
 
 // Value - Density of mist
 #define mist_density 0.18
@@ -50,7 +47,7 @@ vec4 renderMist(vec3 fog, float dist, float lit, float rain, bool nether, bool u
 
 vec4 renderFog(vec3 fogColor, float len, bool nether){
 
-#if FOG_TYPE > 0
+#ifdef TERRAIN_FOG
 
 	vec4 fog;
 	if(nether){
@@ -64,16 +61,11 @@ vec4 renderFog(vec3 fogColor, float len, bool nether){
 
 	fog.a = clamp( (len -  FOG_CONTROL.x)/(FOG_CONTROL.y - FOG_CONTROL.x), 0.0, 1.0);
 
-	#if FOG_TYPE > 1
-		fog.a = (fog.a*fog.a)*(3.0-2.0*fog.a);
-	#endif
-
 	return fog;
 
 #else
 	return vec4(0.0);
 #endif
-
 
 }
 

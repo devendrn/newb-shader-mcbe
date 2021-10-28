@@ -1,7 +1,7 @@
 // Newb shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
-/* SMOOTH CLOUDS */
+/* VANILLA SMOOTH CLOUDS */
 
 // Value - Rainy cloud thickness
 #define rain_cloud_depth 2.0

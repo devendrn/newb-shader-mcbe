@@ -321,26 +321,6 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	light *= 1.05 - 0.35*float(isFarmPlant && !isTop);
 	light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop && isColored && !isTreeLeaves && texNo.y==13.0);
 
-	#ifdef EXTRA_PLANTS_WAVE
-		// bamboo pot plant leaves
-		shouldWave = shouldWave || ( (bPos.y==0.0 || bPos.y==0.125) && bPos.z==0.5 && bPos.x==0.9375);
-
-		// spore blossom petal
-		shouldWave = shouldWave || ( (bPos.x==0.5 || bPos.z==0.5) && bPos.y==0.46875);
-
-			shouldWave = shouldWave || ( (
-			(texNo.y==5.0 && texNo.x>61.9 ) ||		// long bush bottom 1
-			(texNo.y==6.0 && texNo.x<5.1 ) ||		// long bush bottom 2
-			(texNo.y==10.0 && texNo.x>46.9 ) ||		// flowers
-			(texNo.y==11.0 && is(texNo.x,19.9,27.1) ) ||	// tree shurbs
-			(texNo.y==13.0 && is(texNo.x,29.0,40.0) ) ||	// berry bush
-			(texNo.y==14.0 && (texNo.x==48.0 || texNo.x==28.0) )	// wither rose & dandelion
-		) && isTop) || (
-			(texNo.y==6.0 && is(texNo.x,4.9,11.1) ) ||	// long bushes top
-			(texNo==vec2(32.0,13.0))	// sunflower green pad
-		);
-	#endif
-
 	#endif
 
 	if(shouldWave && distanceThreshold<45.0){
@@ -415,7 +395,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 #else
 
-		// for non-fancy and jungle leaves
+	// for non-fancy and jungle leaves
 	#if defined(PLANTS_WAVE) && defined(ALL_LEAVES_WAVE)
 	if(color.a==0.0 && distanceThreshold<45.0){
 		/// values must be a multiple of pi/4
@@ -560,11 +540,7 @@ if(isWater){
 	float fresnel = calculateFresnel(cosR,0.03);
 
 	float opacity = 1.0-cosR;
-	#ifdef USE_ANGLE_BLEND_FADE
-		color.a = getWaterAlpha(COLOR.rgb) + opacity*(1.0-color.a);
-	#else
-		color.a = color.a + (1.0-color.a)*opacity*opacity;
-	#endif
+	color.a = color.a + (1.0-color.a)*opacity*opacity;
 
 	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel;
 
@@ -628,12 +604,6 @@ if(rainFactor > 0.0){
 
 	mistColor.a *= 1.0-rainFactor*fogGradient;
 
-	// humid air blow
-	//float humidAir = clamp(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0,1.0);
-	//humidAir *= rainFactor*lit.y*lit.y;
-	//mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
-	//mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
-
 	// wet effect
 	float endDist = RENDER_DISTANCE*0.6;
 
@@ -651,14 +621,6 @@ if(rainFactor > 0.0){
 
 		wetRefl.rgb = getRainSkyRefl(horizonCol,zenithCol,cosR);
 		wetRefl.a = calculateFresnel(cosR,0.03)*rainFactor*wetness;
-
-		// extra
-		float streaks = viewDir.x/length(viewDir.xz);
-		streaks = sin(streaks*7.0);
-		streaks *= streaks;
-
-		wetRefl.rgb *= 1.0+(streaks*float(uv1.y<0.88));
-		wetRefl.rgb += 0.9*torchLight*streaks;
 
 		// hide effect far from player
 		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );

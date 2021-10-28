@@ -215,10 +215,6 @@ if(end){
 }
 if(underWater){
 	light.rgb *= vec3(0.5,1.4,1.6);
-
-	highp float t = TIME;
-	float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
-	light.rgb += vec3(1.5,3.0,3.3)*caustic;
 }
 
 // wet effect
