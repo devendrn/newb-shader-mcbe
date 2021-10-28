@@ -27,18 +27,7 @@ varying lowp float shade;
 #endif
 
 #ifdef FOG
-	varying float wPosY;
 	varying lowp vec4 wetRefl;
-
-// fast boolean normal for top surface (isY)
-bool isTopSurface(float y){
-
-	// check for change in Y in frag block
-	if(y<0.0){ return (dFdy(y) < 0.0001); }
-	else{ return false; }
-
-}
-
 #endif
 
 #if defined(BLEND) || defined(FAR_BLEND)
@@ -143,11 +132,8 @@ diffuse.rgb *= 1.0 + glow*0.3;
 #ifdef FOG
 	// wet effect
 	if(wetRefl.a > 0.0){
-		// only on xz plane
-		if(isTopSurface(wPosY)){
-			float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
-			diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
-		}
+		float mask = wetRefl.a;
+		diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
 	}
 #endif
 
@@ -156,10 +142,6 @@ diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 
 // color correction
 diffuse.rgb = colorCorrection(diffuse.rgb);
-
-//diffuse.rgb = texture2D(TEXTURE_0, uv0).aaa;
-//diffuse.rgb = color.rgb;
-//diffuse.rgb = texture2D(TEXTURE_0, fract(color.rg*0.0625)).rgb;
 
 	gl_FragColor = diffuse;
 

@@ -27,7 +27,6 @@
 #endif
 
 #ifdef FOG
-	varying float wPosY;
 	varying lowp vec4 wetRefl;
 #endif
 
@@ -375,20 +374,16 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			float offset = dot(floor(cPos),vec3(0.3927));
 
 			// simple random wave for angle
-			vec2 theta = vec2(t + offset,t*1.4 + offset);
-			theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
+			float theta = sin(t + offset) + rainFactor*sin(t*1.4 + offset);
 			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.15);
 
-			float sinA = sin(theta.x);
-			float cosA = cos(theta.x);
-			float sinB = sin(theta.y);
-			float cosB = cos(theta.y);
+			float sinA = sin(theta);
+			float cosA = 1.0-cos(theta);
 
-			vec3 pivotPos = vec3(0.5,1.0,0.5)-bPos;
+			vec2 pivotPos = vec2(0.5,1.0)-bPos.xy;
 
-			worldPos.x += pivotPos.x*(1.0-cosA) - pivotPos.y*sinA;
-			worldPos.y += pivotPos.y*(1.0-cosA*cosB) + pivotPos.x*sinA*cosB + pivotPos.z*sinB;
-			worldPos.z += pivotPos.z*(1.0-cosB) - pivotPos.y*cosA*sinB + pivotPos.x*sinA*sinB;
+			worldPos.x += pivotPos.x*cosA - pivotPos.y*sinA;
+			worldPos.y += pivotPos.y*cosA + pivotPos.x*sinA;
 		}
 
 	#endif //LANTERN_WAVE
@@ -589,10 +584,6 @@ if(isWater){
 #endif //UNDERWATER
 
 
-// out wPos.y for Y-normal calculation in fragment shader
-wPosY = wPos.y;
-
-
 // to remove fog in heights (also rain mist)
 float fogGradient = 1.0-max(-viewDir.y+0.1,0.0);
 fogGradient = 1.0-fogGradient*fogGradient*fogGradient;
@@ -607,7 +598,12 @@ if(rainFactor > 0.0){
 	// wet effect
 	float endDist = RENDER_DISTANCE*0.6;
 
-	if(!isWater && camDist < endDist){
+	bool topSurface = shade>0.9;
+	#ifdef ALPHA_TEST
+	topSurface = topSurface && color.a<0.001;
+	#endif
+
+	if(!isWater && topSurface && camDist < endDist){
 
 		// puddles map
 		float wetness;
@@ -619,7 +615,7 @@ if(rainFactor > 0.0){
 		// cosine of incidence angle
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
 
-		wetRefl.rgb = getRainSkyRefl(horizonCol,zenithCol,cosR);
+		wetRefl.rgb = horizonCol*(1.0-0.7*cosR);
 		wetRefl.a = calculateFresnel(cosR,0.03)*rainFactor*wetness;
 
 		// hide effect far from player
@@ -659,26 +655,6 @@ if(rainFactor > 0.0){
 #else
 	color.rgb *= light;
 #endif
-
-
-//color.rgb *= float(!(uv1.x<0.08 && uv1.x>0.05));
-
-//color.rgb = wPos.xyz;
-
-/*
-// less precise normal
-vec3 nrmlow = vec3(0.0);
-nrmlow.y = -float(shade>0.9);
-nrmlow.z = float(shade>0.75 && shade<0.9);
-nrmlow.x = float(shade>0.4 && shade<0.75);
-nrmlow *= sign(wPos);
-
-#ifdef ALPHA_TEST
-nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
-#endif
-*/
-
-//color.rgb = uv1.yyy;
 
 
 #ifdef GOD_RAYS
