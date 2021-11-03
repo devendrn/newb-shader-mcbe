@@ -68,16 +68,11 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 // Value - Wave intensity of water surface
 #define WATER_WAVE 0.02
 
-// Value - Water transparency (0-1)
-#define water_transparency 0.47
-
-// Value - Water noise bump height (0-0.2)
-#define water_bump 0.07
+// Value - Water opacity (0-1)
+#define water_opacity 0.2
 
 // Color - Water color
-const vec3 sea_water_color = vec3(0.13,0.65,0.87);
-const vec3 fresh_water_color = vec3(0.07,0.55,0.55);
-const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
+const vec3 water_tint = vec3(1.0,1.0,0.6);
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

@@ -70,16 +70,6 @@ float noise1D(float x){
 	return cos(x)*cos(x*3.0)*cos(x*5.0) + 1.0;
 }
 
-// water transparency
-float getWaterAlpha(vec3 color){
-	// swamp, fresh 
-	float tint = color.r;
-	vec2 values = vec2(0.9,water_transparency);
-
-	if(tint < 0.5){ return mix(values.x,values.y,tint*2.0); }
-	else{ return values.y; }
-}
-
 // simpler rand for disp,wetmap
 float fastRand(vec2 n){ 
 	float a = cos( dot(n,vec2(4.2683,1.367)) );
@@ -162,7 +152,7 @@ void main()
 
 	bool chunkBorder = (fract(cPos.x*0.0625)*fract(cPos.z*0.0625) == 0.0);
 
-	shade = color.g;
+	lowp float shade = color.g;
 	if(isColored){shade *= 1.5;}
 
 	// environment detections
@@ -180,7 +170,7 @@ void main()
 	// block type
 
 	#ifdef MAYBE_WATER
-		bool isWater = COLOR.b<0.02;
+		bool isWater = COLOR.b>COLOR.r && COLOR.b>COLOR.g;
 		water = float(isWater);
 	#else
 		bool isWater = false;
@@ -450,7 +440,8 @@ float relativeDist = camDist / RENDER_DISTANCE;
 		#ifdef FANCY
 			// fade out blended water layer to opaque layer
 			float alphaFadeOut = clamp(camDist / FAR_CHUNKS_DISTANCE, 0.0, 1.0);
-			color.a = mix(getWaterAlpha(COLOR.rgb)-float(underWater)*0.3, 1.0, alphaFadeOut);
+			color.a = color.a + (1.0-color.a)*water_opacity;
+			color.a = mix(color.a,1.0,alphaFadeOut);
 		#else
 			color.a = 1.0;
 		#endif
@@ -480,11 +471,8 @@ if(isWater){
 	// this is used for finding the type of plane
 	float fractCposY = fract(cPos.y);
 
-	// get water color (r-tint,g-lightness)
-	vec3 transmission = fresh_water_color;
-	if(COLOR.r < 0.5){ transmission = mix(marshy_water_color,transmission,COLOR.r*2.0);}
-	else{ transmission = mix(transmission,sea_water_color,(COLOR.r*2.0)-1.0);}
-	transmission *= COLOR.g;
+	// adjusted water color
+	vec3 transmission = color.rgb*water_tint*3.1;
 
 	transmission *= 0.3 + (FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor);
 	transmission *= light*max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2)*max(0.3+0.7*uv1.y,uv1.x);
@@ -496,26 +484,16 @@ if(isWater){
 	if( fractCposY > 0.0 ){
 
 		// calculate cosine of incidence angle and apply water bump
-		float bump = water_bump*disp(cPos.xyz,t,chunkBorder);
-		bump += 0.12*water_bump*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
 		cosR = abs(viewDir.y);
-		cosR = mix(cosR,(1.0-cosR*cosR),bump);
 
 		// sky reflection
 		waterRefl = getSkyRefl(horizonEdgeCol,horizonCol,zenithCol,cosR,-wPos.y);
-
-		// sunrise/sunset reflection
-		float sunRefl = clamp((abs(viewDir.x)-0.9)/0.099,0.0,1.0);
-		sunRefl *= sunRefl*sunRefl;
-		sunRefl *= sunRefl;
-		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
-		waterRefl += (horizonEdgeCol.r*sunRefl)*vec3(2.5,1.6,0.8);
 
 		// sky reflection mask
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
 
 		// ambient,torch light reflection
-		waterRefl += vec3(0.02*(1.0-uv1.y)) + torch_color*torch_intensity*(0.6*float(uv1.x>0.83) + lit.x*bump*10.0);
+		waterRefl += vec3(0.02*(1.0-uv1.y)) + torch_color*torch_intensity*(0.6*float(uv1.x>0.83));
 
 		// flat plane
 		if( is(fractCposY,0.8,0.9) ){ waterRefl *= 1.0 - 0.66*clamp(wPos.y,0.0,1.0); }
@@ -527,7 +505,6 @@ if(isWater){
 	// reflection for side plane
 	else{
 		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
-		cosR += (1.0-cosR*cosR)*water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
 
 		waterRefl = zenithCol*(lit.y*1.3);
 	}

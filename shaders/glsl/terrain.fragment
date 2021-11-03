@@ -20,8 +20,6 @@
 varying vec4 color;
 varying vec4 mistColor;
 
-varying lowp float shade;
-
 #ifdef SEASONS
 	varying vec3 sCol;
 #endif
@@ -115,14 +113,16 @@ vec4 inColor = color;
 	diffuse.a = 1.0;
 #endif
 
-/// apply color and lighting
+/// apply water alpha
 #ifdef MAYBE_WATER
-	// ignore water texture and replace it with vertex calculated water
-	if(water>0.5){diffuse = inColor;}
-	else{ diffuse.rgb *= inColor.rgb; }
-#else
-	diffuse.rgb *= inColor.rgb;
+	if(water>0.5){
+		diffuse.rgb = diffuse.bbb;
+		diffuse.a = inColor.a;
+	}
 #endif
+
+// apply color
+diffuse.rgb *= inColor.rgb;
 
 // light glow
 float glow = uv1.x*uv1.x;
