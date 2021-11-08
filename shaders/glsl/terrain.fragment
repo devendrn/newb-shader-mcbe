@@ -25,7 +25,7 @@ varying vec4 mistColor;
 #endif
 
 #ifdef FOG
-	varying lowp vec4 wetRefl;
+	varying lowp float wetRefl;
 #endif
 
 #if defined(BLEND) || defined(FAR_BLEND)
@@ -33,7 +33,7 @@ varying vec4 mistColor;
 	varying lowp float water;
 #endif
 
-#endif	// !BYPASS_PIXEL_SHADER
+#endif
 
 #include "uniformShaderConstants.h"
 #include "util.h"
@@ -61,14 +61,12 @@ void main()
 	vec4 diffuse = texture2D(TEXTURE_0, uv0);
 #endif
 
-// we need textures in linear-space colors
 diffuse.rgb *= diffuse.rgb;
 
 #ifdef SEASONS_FAR
 	diffuse.a = 1.0;
 #endif
 
-// clip alpha
 #if USE_ALPHA_TEST
 	#ifdef ALPHA_TO_COVERAGE
 		if(diffuse.a < 0.05){ discard; }
@@ -79,17 +77,14 @@ diffuse.rgb *= diffuse.rgb;
 	
 vec4 inColor = color;
 
-// transparency
 #if defined(BLEND)
 	diffuse.a *= inColor.a;
 #endif
 
-// day night tint
 #if !defined(ALWAYS_LIT)
 	vec3 tint = texture2D( TEXTURE_1, uv1).rgb;
 	tint = mix(tint.bbb,tint*tint,0.8+(0.2*uv1.y*uv1.y*uv1.y));
 
-	// glowy ores
 	#ifdef GLOWY_ORES
 	if(diffuse.a<0.06 && diffuse.a>0.0){
 		inColor.rgb = max(inColor.rgb,(vec3(GLOWY_ORES) + 0.6*diffuse.rgb)*(1.0-uv1.y));
@@ -105,15 +100,12 @@ vec4 inColor = color;
 		diffuse.a = inColor.a;
 	#endif
 #else
-	// season tree leaves color
-	//diffuse.rgb *= texture2D( TEXTURE_2, sCol.rg).rgb*2.0;
 	diffuse.rgb *= mix(vec3(1.0), texture2D( TEXTURE_2, sCol.rg).rgb*2.0, sCol.b);
 
 	diffuse.rgb *= inColor.a;
 	diffuse.a = 1.0;
 #endif
 
-/// apply water alpha
 #ifdef MAYBE_WATER
 	if(water>0.5){
 		diffuse.rgb = diffuse.bbb;
@@ -121,26 +113,20 @@ vec4 inColor = color;
 	}
 #endif
 
-// apply color
 diffuse.rgb *= inColor.rgb;
 
-// light glow
 float glow = uv1.x*uv1.x;
-glow *= glow*glow*glow*glow;
-diffuse.rgb *= 1.0 + glow*0.3;
+glow *= glow;
+diffuse.rgb *= 1.0 + glow*glow*0.2;
 
 #ifdef FOG
-	// wet effect
-	if(wetRefl.a > 0.0){
-		float mask = wetRefl.a;
-		diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
+	if(wetRefl > 0.0){
+		diffuse.rgb += vec3(wetRefl);
 	}
 #endif
 
-// mist,fog
 diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 
-// color correction
 diffuse.rgb = colorCorrection(diffuse.rgb);
 
 	gl_FragColor = diffuse;

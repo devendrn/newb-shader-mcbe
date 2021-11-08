@@ -4,7 +4,7 @@
         "description": " A lighter version of Newb Shader!\n \n v1.1.89L  §3https://mcpedl.com/newb-shader/",
         "name": "Newb Shader Lite",
         "uuid": "95f174cf-4afa-73e7-a21a-12346207b1d2",
-        "version": [1, 1, 8955],
+        "version": [1, 1, 897],
         "min_engine_version": [1, 14, 10]
     },
     "modules": [
@@ -12,7 +12,7 @@
             "description": " An aesthetic shader for Minecraft!",
             "type": "resources",
             "uuid": "900f3d7b-37b4-462f-7f56-181687e46c35",
-            "version": [1, 1, 8955]
+            "version": [1, 1, 897]
         }
     ],
     "metadata": {

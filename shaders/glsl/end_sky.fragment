@@ -15,8 +15,6 @@
 #include "uniformShaderConstants.h"
 #include "util.h"
 
-//varying vec3 zenith_color;
-//varying vec3 void_color;
 varying vec3 horizon_color;
 varying vec3 pos;
 
@@ -36,11 +34,6 @@ void main()
 
 	// end sky gradient
 	vec3 color = horizon_color*smoothstep(0.0,1.0,grad);
-
-	//float streaks = sin((pos.x+pos.z)*6.0);
-	//streaks *= streaks;
-	//streaks *= 1.0-grad;
-	//color *= 1.0-streaks;
 
 	// stars
 	color += diffuse.rgb*(1.0-grad*grad);
