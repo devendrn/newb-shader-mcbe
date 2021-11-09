@@ -390,7 +390,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			float offset = dot(floor(cPos),vec3(0.3927));
 
 			// simple random wave for angle
-			vec2 theta = vec2(t + offset,t*1.4 + offset);
+			highp vec2 theta = vec2(t + offset,t*1.4 + offset);
 			theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
 			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.15);
 

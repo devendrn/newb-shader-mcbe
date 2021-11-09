@@ -4,7 +4,7 @@
         "description": " An aesthetic shader for Minecraft!\n \n v1.1.89b  §3https://mcpedl.com/newb-shader/",
         "name": "Newb Shader",
         "uuid": "95f774cf-4afa-73e7-a21a-72146307b1d2",
-        "version": [1, 1, 895],
+        "version": [1, 1, 896],
         "min_engine_version": [1, 14, 10]
     },
     "modules": [
@@ -12,7 +12,7 @@
             "description": " An aesthetic shader for Minecraft!",
             "type": "resources",
             "uuid": "900f3d8b-37b4-465f-8f56-941687e36c35",
-            "version": [1, 1, 895]
+            "version": [1, 1, 896]
         }
     ],
     "metadata": {
