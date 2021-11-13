@@ -43,7 +43,7 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 
 // Toggle - Plants Wave (leaves/plants)
 // Value - Wave animation intensity (Plants)
-#define PLANTS_WAVE 0.02
+//#define PLANTS_WAVE 0.02
 
 // Toggle - Lantern swing
 // Value - Lantern swing intensity (0-0.3)
@@ -60,7 +60,7 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 
 // Toggle - Water wave
 // Value - Wave intensity of water surface
-#define WATER_WAVE 0.02
+//#define WATER_WAVE 0.02
 
 // Value - Water opacity (0-1)
 #define water_opacity 0.2
@@ -76,7 +76,7 @@ const vec3 water_tint = vec3(1.0,1.0,0.6);
 
 // Toggle - Underwater Wave
 // Value - Wave intensity
-#define UNDERWATER_WAVE 0.06
+//#define UNDERWATER_WAVE 0.06
 
 // Value - Underwater brightness
 #define underwater_brightness 0.8

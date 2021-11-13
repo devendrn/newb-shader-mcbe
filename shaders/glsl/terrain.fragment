@@ -83,7 +83,7 @@ vec4 inColor = color;
 
 #if !defined(ALWAYS_LIT)
 	vec3 tint = texture2D( TEXTURE_1, uv1).rgb;
-	tint = mix(tint.bbb,tint*tint,0.8+(0.2*uv1.y*uv1.y*uv1.y));
+	tint = mix(tint.bbb,tint*tint,0.6+(0.4*uv1.y*uv1.y*uv1.y));
 
 	#ifdef GLOWY_ORES
 	if(diffuse.a<0.06 && diffuse.a>0.0){
@@ -120,9 +120,7 @@ glow *= glow;
 diffuse.rgb *= 1.0 + glow*glow*0.2;
 
 #ifdef FOG
-	if(wetRefl > 0.0){
-		diffuse.rgb += vec3(wetRefl);
-	}
+	if(wetRefl>0.0){ diffuse.rgb += vec3(wetRefl);}
 #endif
 
 diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );

@@ -262,7 +262,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	#endif
 
-	if(shouldWave && distanceThreshold<45.0){
+	if(shouldWave && distanceThreshold<40.0){
 
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
