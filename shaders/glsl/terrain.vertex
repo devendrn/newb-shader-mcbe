@@ -470,7 +470,7 @@ float relativeDist = camDist / RENDER_DISTANCE;
 		#ifdef FANCY
 			// fade out blended water layer to opaque layer
 			float alphaFadeOut = clamp(camDist / FAR_CHUNKS_DISTANCE, 0.0, 1.0);
-			color.a = mix(getWaterAlpha(COLOR.rgb)-float(underWater)*0.3, 1.0, alphaFadeOut);
+			color.a = mix(getWaterAlpha(COLOR.rgb)-0.0*float(underWater)*0.3, 1.0, 0.5*alphaFadeOut);
 		#else
 			color.a = 1.0;
 		#endif

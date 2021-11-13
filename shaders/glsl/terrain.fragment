@@ -100,7 +100,7 @@ vec4 inColor = color;
 // day night tint
 #if !defined(ALWAYS_LIT)
 	vec3 tint = texture2D( TEXTURE_1, uv1).rgb;
-	tint = mix(tint.bbb,tint*tint,0.8+(0.2*uv1.y*uv1.y*uv1.y));
+	tint = mix(tint.bbb,tint*tint,0.6+(0.4*uv1.y*uv1.y*uv1.y));
 
 	// glowy ores
 	#ifdef GLOWY_ORES
