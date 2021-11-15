@@ -217,7 +217,7 @@ void main()
 #else
 	if(isColored){color.rgb *= color.rgb*1.2;}
 
-	if(color.a == 0.0 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.00151;}
+	if(color.a < 0.005 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.00151;}
 #endif
 
 
@@ -287,6 +287,8 @@ else{
 // darken at crevices
 light *= 0.8+0.2*float(COLOR.g>0.35);
 
+// brighten tree leaves
+if(color.a<0.005){light *= 1.3;}
 
 lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
@@ -313,8 +315,10 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
 
 	// darken plants bottom - better to not move it elsewhere
-	light *= 1.05 - 0.35*float(isFarmPlant && !isTop);
-	light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop && isColored && !isTreeLeaves && texNo.y==13.0);
+	light *= 1.0 - 0.35*float(isFarmPlant && !isTop);
+	if(isColored && !isTreeLeaves && texNo.y==13.0){
+		light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop);
+	}
 
 	#ifdef EXTRA_PLANTS_WAVE
 		// bamboo pot plant leaves
