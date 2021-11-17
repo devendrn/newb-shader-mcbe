@@ -667,7 +667,6 @@ if(rainFactor > 0.0){
 		if(chunkBorder){ wetness = max(0.5+0.5*sin((cPos.x+cPos.z)*rd),0.6);}
 		else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
 		wetness *= lit.y*lit.y;
-		color.rgb *= 1.0-0.5*wetness*rainFactor;
 
 		// cosine of incidence angle
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
@@ -680,11 +679,18 @@ if(rainFactor > 0.0){
 		streaks = sin(streaks*7.0);
 		streaks *= streaks;
 
-		wetRefl.rgb *= 1.0+(streaks*float(uv1.y<0.88));
+		wetRefl.rgb *= 1.0+(0.7*streaks*float(uv1.y<0.88));
 		wetRefl.rgb += 0.9*torchLight*streaks;
 
 		// hide effect far from player
-		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );
+		float mask = clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );
+		wetRefl.a *= 1.0-mask;
+
+		// darken wet parts
+		color.rgb *= 1.0-0.5*wetness*rainFactor;
+	}
+	else{
+		color.rgb *= 1.0-0.4*lit.y*lit.y*rainFactor;
 	}
 
 }
