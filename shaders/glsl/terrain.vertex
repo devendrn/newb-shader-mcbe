@@ -259,7 +259,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
 
 	light *= 1.0 - 0.35*float(isFarmPlant && !isTop);
-	if(isColored && !isTreeLeaves && texNo.y==13.0){		light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop);
+	if(isColored && !isTreeLeaves && texNo.y==13.0){
+		light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop);
 	}
 
 	#endif
@@ -480,13 +481,16 @@ if(rainFactor > 0.0){
 		else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
 		wetness *= lit.y*lit.y;
 
-		color.rgb *= 1.0-0.5*wetness*rainFactor;
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
 
 		wetRefl = horizonCol.b*(1.0-0.7*cosR);
 		wetRefl *= calculateFresnel(cosR)*rainFactor*wetness;
 
 		wetRefl *= 1.0-clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );
+		color.rgb *= 1.0-0.5*wetness*rainFactor;
+	}
+	else{
+		color.rgb *= 1.0-0.4*lit.y*lit.y*rainFactor;
 	}
 
 }
