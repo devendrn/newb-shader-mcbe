@@ -16,10 +16,10 @@
 /* TERRAIN LIGHTING */
 
 // Toggle - Flickering torch light
-//#define BLINKING_TORCH
+#define BLINKING_TORCH
 
 // Toggle - God rays (incomplete)
-//#define GOD_RAYS
+#define GOD_RAYS
 
 // Value - Intensity of soft shadow (0-1)
 #define shadow_intensity 0.7
