@@ -61,10 +61,12 @@ attribute vec2 TEXCOORD_1;
 const float rd = 1.57079; // pi by 2
 const float shadowIntensity = 1.0-shadow_intensity;
 
+
 // bool between function
 bool is(float val,float val1,float val2){
 	return (val>val1 && val<val2);
 }
+
 
 // water transparency
 float getWaterAlpha(vec3 color){
@@ -76,12 +78,14 @@ float getWaterAlpha(vec3 color){
 	else{ return values.y; }
 }
 
+
 // simpler rand for disp,wetmap
 float fastRand(vec2 n){ 
 	float a = cos( dot(n,vec2(4.2683,1.367)) );
 	float b = dot( n,vec2(1.367,4.683) );
 	return fract(a+b);
 }
+
 
 // water displacement map (also used by caustic)
 float disp(vec3 pos, highp float t, bool chunkBorder){
@@ -94,6 +98,7 @@ float disp(vec3 pos, highp float t, bool chunkBorder){
 	}
 }
 
+
 // sky reflection on plane - used by water, wet reflection
 vec3 getSkyRefl(vec3 horizonEdge, vec3 horizon, vec3 zenith, float y, float h){
 
@@ -104,6 +109,7 @@ vec3 getSkyRefl(vec3 horizonEdge, vec3 horizon, vec3 zenith, float y, float h){
 	return renderSky(horizonEdge, horizon, zenith, y);
 }
 
+
 // simpler sky reflection for rain
 vec3 getRainSkyRefl(vec3 horizon, vec3 zenith, float h){
 
@@ -111,7 +117,18 @@ vec3 getRainSkyRefl(vec3 horizon, vec3 zenith, float h){
 	float hsq = h*h;
 
 	return mix(zenith,horizon,hsq*hsq);
+}
+
+// sunrise/sunset reflection
+vec3 getSunRefl(float viewDirX, float fog_brightness){
+	float sunRefl = clamp((abs(viewDirX)-0.9)/0.099,0.0,1.0);
+	float factor = FOG_COLOR.r/length(FOG_COLOR.rgb);
+	factor *= factor;
+	sunRefl *= sunRefl*sunRefl*factor*factor;
+	sunRefl *= sunRefl;
+	return (fog_brightness*sunRefl)*vec3(2.5,1.6,0.8);
 }
+
 
 // fresnel - Schlick's approximation
 float calculateFresnel(float cosR, float r0){
@@ -123,22 +140,18 @@ float calculateFresnel(float cosR, float r0){
 	return r0 + (1.0-r0)*a5;
 }
 
+
 void main()
 {
-	POS4 worldPos;
-	POS4 pos;
 
 // pos will be applied to gl_Position after wave code
-
 #ifdef AS_ENTITY_RENDERER
-	pos = WORLDVIEWPROJ * POSITION;
-	worldPos = pos;
+	POS4 pos = WORLDVIEWPROJ * POSITION;
+	POS4 worldPos = pos;
 #else
-	// World position is calculated here and can get huge
+	POS4 worldPos;
 	worldPos.xyz = ((POSITION.xyz) * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
 	worldPos.w = 1.0;
-
-	// pos will be calculated after wave code
 #endif
 
 	vec3 wPos = worldPos.xyz;
@@ -173,8 +186,6 @@ void main()
 		float rainFactor = 0.0;
 	#endif
 
-	// block type
-
 	#ifdef MAYBE_WATER
 		bool isWater = COLOR.b<0.02;
 		water = float(isWater);
@@ -188,9 +199,7 @@ void main()
 	vec3 horizonEdgeCol = getHorizonEdgeCol(horizonCol,rainFactor);
 	if(underWater){
 		vec3 fogcol = getUnderwaterCol();
-		zenithCol = fogcol;
-		horizonCol = fogcol;
-		horizonEdgeCol = fogcol;
+		zenithCol,horizonCol,horizonEdgeCol = fogcol;
 	}
 
 
@@ -216,12 +225,11 @@ void main()
 	uv1.y *= 1.00151;
 #else
 	if(isColored){color.rgb *= color.rgb*1.2;}
-
 	if(color.a < 0.005 || (fract(cPos.y)==0.5 && fract(cPos.x)==0.0) ){uv1.y *= 1.00151;}
 #endif
 
 
-// Lighting (a bit complicated)
+// Lighting
 // all of these will be multiplied by tex uv1 in frag so functions should be divided by uv1 here
 
 float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
@@ -237,11 +245,8 @@ if(nether || end){
 	// nether & end lighting
 
 	// ambient
-	if(end){
-		light = vec3(1.98,1.25,2.3);
-	}else{
-		light = vec3(1.98,1.44,1.26);
-	}
+	if(end){light = vec3(1.98,1.25,2.3);}
+	else{light = vec3(1.98,1.44,1.26);}
 
 	// torch light
 	light += torchLight*1.1;
@@ -414,7 +419,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 #else
 
-		// for non-fancy and jungle leaves
+	// for non-fancy and jungle leaves
 	#if defined(PLANTS_WAVE) && defined(ALL_LEAVES_WAVE)
 	if(color.a==0.0 && distanceThreshold<45.0){
 		/// values must be a multiple of pi/4
@@ -447,7 +452,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 #ifndef AS_ENTITY_RENDERER
 	// Transform to view space before projection instead of all at once to avoid floating point errors
 	// Not required for entities because they are already offset by camera translation before rendering
-	pos = WORLDVIEW * worldPos;
+	POS4 pos = WORLDVIEW * worldPos;
 	pos = PROJ * pos;
 #endif
 
@@ -457,13 +462,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 #ifndef BYPASS_PIXEL_SHADER
 
 
-// distance from the camera (used by mist, fog, water)
-#ifdef FANCY
-	float camDist = length(wPos.xyz);
-#else
-	float camDist = pos.x/(1.0+pos.z);
-	camDist = (1.0 + camDist*camDist)*pos.z;
-#endif
+// distance from the camera (used by mist, fog, water)float camDist = length(wPos.xyz);
+
 
 float relativeDist = camDist / RENDER_DISTANCE;
 
@@ -485,7 +485,7 @@ float relativeDist = camDist / RENDER_DISTANCE;
 // mist (also used in underwater to decrease visibility)
 mistColor = renderMist(horizonEdgeCol, relativeDist, lit.x, rainFactor, nether,underWater,end);
 
-if(!nether && !underWater){
+if(!(nether || underWater)){
 	mistColor.rgb *= max(0.75,uv1.y);
 	mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
 }
@@ -493,11 +493,7 @@ if(!nether && !underWater){
 
 #if defined(FOG) || defined(BLEND)
 
-#ifdef FANCY
-	vec3 viewDir = -wPos.xyz/camDist;
-#else
-	vec3 viewDir = normalize(-wPos.xyz);
-#endif
+vec3 viewDir = -wPos.xyz/camDist;
 
 #ifdef MAYBE_WATER
 if(isWater){  
@@ -527,13 +523,7 @@ if(isWater){
 
 		// sky reflection
 		waterRefl = getSkyRefl(horizonEdgeCol,horizonCol,zenithCol,cosR,-wPos.y);
-
-		// sunrise/sunset reflection
-		float sunRefl = clamp((abs(viewDir.x)-0.9)/0.099,0.0,1.0);
-		sunRefl *= sunRefl*sunRefl;
-		sunRefl *= sunRefl;
-		sunRefl *= pow(FOG_COLOR.r/length(FOG_COLOR.rgb),8.0);
-		waterRefl += (horizonEdgeCol.r*sunRefl)*vec3(2.5,1.6,0.8);
+		waterRefl += getSunRefl(viewDir.x,horizonEdgeCol.r);
 
 		// cloud reflection
 		#if defined(FANCY) && defined(CLOUD_REFLECTION)
@@ -720,32 +710,11 @@ if(rainFactor > 0.0){
 
 
 // apply light to color
-
 #ifdef MAYBE_WATER
 	if(!isWater){ color.rgb *= light; }
 #else
 	color.rgb *= light;
 #endif
-
-
-//color.rgb *= float(!(uv1.x<0.08 && uv1.x>0.05));
-
-//color.rgb = wPos.xyz;
-
-/*
-// less precise normal
-vec3 nrmlow = vec3(0.0);
-nrmlow.y = -float(shade>0.9);
-nrmlow.z = float(shade>0.75 && shade<0.9);
-nrmlow.x = float(shade>0.4 && shade<0.75);
-nrmlow *= sign(wPos);
-
-#ifdef ALPHA_TEST
-nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
-#endif
-*/
-
-//color.rgb = uv1.yyy;
 
 
 #ifdef GOD_RAYS
@@ -778,6 +747,21 @@ vol *= clamp(3.0*(FOG_COLOR.r-FOG_COLOR.b),0.0,1.0);
 mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 
 #endif
+
+
+/*
+// less precise normal
+vec3 nrmlow = vec3(0.0);
+nrmlow.y = -float(shade>0.9);
+nrmlow.z = float(shade>0.75 && shade<0.9);
+nrmlow.x = float(shade>0.4 && shade<0.75);
+nrmlow *= sign(wPos);
+
+#ifdef ALPHA_TEST
+nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
+#endif
+*/
+
 
 #endif	//!BYPASS_PIXEL_SHADER
 
