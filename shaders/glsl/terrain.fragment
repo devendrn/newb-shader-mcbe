@@ -104,7 +104,7 @@ vec4 inColor = color;
 
 	// glowy ores
 	#ifdef GLOWY_ORES
-	if(diffuse.a<0.06 && diffuse.a>0.0){
+	if(diffuse.a<0.06 && diffuse.a>0.0 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
 		inColor.rgb = max(inColor.rgb,(vec3(GLOWY_ORES) + 0.6*diffuse.rgb)*(1.0-uv1.y));
 		tint = vec3(0.2) + 0.8*tint;
 	}

@@ -679,8 +679,7 @@ if(rainFactor > 0.0){
 		wetRefl.rgb += 0.9*torchLight*streaks;
 
 		// hide effect far from player
-		float mask = clamp( (2.0*camDist/endDist)-1.0 ,0.0 ,1.0 );
-		wetRefl.a *= 1.0-mask;
+		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0,0.0,1.0 );
 
 		// darken wet parts
 		color.rgb *= 1.0-0.5*wetness*rainFactor;
