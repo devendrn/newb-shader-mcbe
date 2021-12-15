@@ -81,7 +81,7 @@ A list of all config files, and their basic options
 
 > ##### extra.h
 > - Sun/moon rotation
-> - Glowy ores
+> - Glow textures
 > - GUI touch circle
 
 If you have a suggestion, dm the creator at discord.
