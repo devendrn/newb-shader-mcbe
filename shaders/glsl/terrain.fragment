@@ -86,7 +86,7 @@ diffuse.rgb *= diffuse.rgb;
 	#ifdef ALPHA_TO_COVERAGE
 		if(diffuse.a < 0.05){ discard; }
 	#else
-		if(diffuse.a < 0.5){ discard; }
+		if(diffuse.a < 0.04 || (diffuse.a < 0.5 && diffuse.a > 0.05)){ discard; }
 	#endif
 #endif
 	
@@ -103,9 +103,9 @@ vec4 inColor = color;
 	tint = mix(tint.bbb,tint*tint,0.35+(0.65*uv1.y*uv1.y*uv1.y));
 
 	// glowy ores
-	#ifdef GLOWY_ORES
+	#ifdef GLOW_TEX
 	if(diffuse.a<0.06 && diffuse.a>0.0 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
-		inColor.rgb = max(inColor.rgb,(vec3(GLOWY_ORES) + 0.6*diffuse.rgb)*(1.0-uv1.y));
+		inColor.rgb = max(inColor.rgb,(vec3(GLOW_TEX) + 0.6*diffuse.rgb)*(1.0-uv1.y));
 		tint = vec3(0.2) + 0.8*tint;
 	}
 	#endif

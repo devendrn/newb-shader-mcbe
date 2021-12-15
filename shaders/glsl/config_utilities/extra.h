@@ -10,10 +10,10 @@
 
 
 /*""""""""""""""""""""""""""""""""""""""*/
-/* GLOWY ORES */
+/* GLOW TEXTURES */
 
-// Toggle + Value - Glowy ore (brightness)
-#define GLOWY_ORES 1.6
+// Toggle + Value - Glow textures (brightness)
+#define GLOW_TEX 1.6
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
