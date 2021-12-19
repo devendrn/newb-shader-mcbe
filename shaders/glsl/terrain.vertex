@@ -1,8 +1,6 @@
 // __multiversion__
 
-
 precision lowp float;
-
 
 #ifndef BYPASS_PIXEL_SHADER
 
