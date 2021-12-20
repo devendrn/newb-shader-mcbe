@@ -71,13 +71,11 @@ bool is(float val,float val1,float val2){
 
 
 // water transparency
-float getWaterAlpha(vec3 color){
-	// swamp, fresh 
-	float tint = color.r;
-	vec2 values = vec2(0.9,water_transparency);
+float getWaterAlpha(vec3 col){
+	// tint - col.r, 
+	vec2 val = vec2(0.9,water_transparency); // swamp, fresh 
 
-	if(tint < 0.5){ return mix(values.x,values.y,tint*2.0); }
-	else{ return values.y; }
+	return col.r<0.5 ? mix(val.x,val.y,col.r*2.0) : val.y;
 }
 
 
@@ -146,15 +144,15 @@ float calculateFresnel(float cosR, float r0){
 void main()
 {
 
-// pos will be applied to gl_Position after wave code
-#ifdef AS_ENTITY_RENDERER
-	POS4 pos = WORLDVIEWPROJ * POSITION;
-	POS4 worldPos = pos;
-#else
-	POS4 worldPos;
-	worldPos.xyz = ((POSITION.xyz) * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
-	worldPos.w = 1.0;
-#endif
+	// pos will be applied to gl_Position after wave code
+	#ifdef AS_ENTITY_RENDERER
+		POS4 pos = WORLDVIEWPROJ * POSITION;
+		POS4 worldPos = pos;
+	#else
+		POS4 worldPos;
+		worldPos.xyz = ((POSITION.xyz) * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
+		worldPos.w = 1.0;
+	#endif
 
 	vec3 wPos = worldPos.xyz;
 	vec3 cPos = POSITION.xyz;
@@ -174,8 +172,7 @@ void main()
 
 	bool chunkBorder = (fract(cPos.x*0.0625)*fract(cPos.z*0.0625) == 0.0);
 
-	shade = color.g;
-	if(isColored){shade *= 1.5;}
+	shade = isColored ? color.g*1.5 : color.g;
 
 	// environment detections
 	bool end = detectEnd();
@@ -208,9 +205,8 @@ void main()
 
 // time
 #ifdef USE_REAL_WORLD_TIME
-	// in seconds, resets to 0 every hour (3600 = 1 hour)
-	// we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
-	// this is bad because this will cause time to reverse after 1800
+	// we remap 0-3600s to 0-1800-0s and adjust speed by 0.55
+	// not ideal as it will reverse after 1800
 	highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
 #else
 	highp float t = TIME;
@@ -247,9 +243,8 @@ vec3 light;
 if(nether || end){
 	// nether & end lighting
 
-	// ambient
-	if(end){light = vec3(1.98,1.25,2.3);}
-	else{light = vec3(1.98,1.44,1.26);}
+	// ambient - end and nether
+	light = end ? vec3(1.98,1.25,2.3) : vec3(1.98,1.44,1.26);
 
 	// torch light
 	light += torchLight*1.1;
@@ -276,10 +271,10 @@ else{
 	#endif
 
 	// make shadow a bit softer and more softer when raining
-	shadow += (0.2+0.3*rainFactor)*(1.0-shadow)*float(uv1.y > 0.85);
+	shadow += uv1.y > 0.85 ? (0.2+0.3*rainFactor)*(1.0-shadow) : 0.0;
 
 	shadow = max(shadow,(shadowIntensity + (0.6*shadow_intensity*nightFactor))*lit.y);
-	shadow *= 0.8 + 0.2*float(shade>0.8);
+	shadow *= shade>0.8 ? 1.0 : 0.8;
 
 	// direct light from top
 	float dirLight = shadow*(1.0-uv1.x*nightFactor)*lightIntensity;
@@ -293,7 +288,7 @@ else{
 }
 
 // darken at crevices
-light *= 0.8+0.2*float(COLOR.g>0.35);
+light *= COLOR.g > 0.35 ? 1.0 : 0.8;
 
 // brighten tree leaves
 if(color.a<0.005){light *= 1.3;}
@@ -324,9 +319,9 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
 
 	// darken plants bottom - better to not move it elsewhere
-	light *= 1.0 - 0.35*float(isFarmPlant && !isTop);
+	light *= isFarmPlant && !isTop ? 0.65 : 1.0;
 	if(isColored && !isTreeLeaves && texNo.y==13.0){
-		light *= 1.2 - (0.5+(1.0-bPos.y)*float(bPos.y >0.0))*float(!isTop);
+		light *= isTop ? 1.2 : 1.2 - (bPos.y>0.0 ? 1.5-bPos.y : 0.5);
 	}
 
 	#ifdef EXTRA_PLANTS_WAVE
@@ -363,11 +358,11 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			amplitude *= 0.5;
 		#else
 
-			amplitude *= 1.0 - 0.5*float(isTreeLeaves);
-			amplitude *= 1.0 - (0.6 + 0.3*float(isTop))*float(isVines);
+			amplitude *= isTreeLeaves ? 0.5 : 1.0;
+			amplitude *= isVines ? 0.1 + 0.4*cos(cPos.y*3.14159) : 1.0;
 
 			// wave the bottom of plants in opposite direction to make it look fixed
-			if(isPlants && isColored && !isTop){amplitude *= (bPos.y-1.0)*float(bPos.y>0.0);}
+			if(isPlants && isColored && !isTop && !isVines){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
 
 		#endif
 
@@ -618,7 +613,7 @@ if(isWater){
 		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
 
 		//if(is(uv1.y,0.81,0.82) || is(uv1.y,0.68,0.69) || is(uv1.y,0.56,0.57) || is(uv1.y,0.43,0.44) || is(uv1.y,0.31,0.32)){light.rgb=vec3(1.0,0.0,0.0);}
-		caustics *= 1.6 + 1.6*float( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32));
+		caustics *= ( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32)) ? 32.0 : 16.0 ;
 
 		light += caustics*underWaterColor*(0.1+lit.y+(lit.x*0.7))*caustic_intensity;
 
