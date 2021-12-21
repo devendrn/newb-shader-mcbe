@@ -117,7 +117,8 @@ vec3 getRainSkyRefl(vec3 horizon, vec3 zenith, float h){
 	float hsq = h*h;
 
 	return mix(zenith,horizon,hsq*hsq);
-}
+}
+
 
 // sunrise/sunset reflection
 vec3 getSunRefl(float viewDirX, float fog_brightness){
@@ -461,7 +462,8 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 #ifndef BYPASS_PIXEL_SHADER
 
 
-// distance from the camera (used by mist, fog, water)float camDist = length(wPos.xyz);
+// distance from the camera (used by mist, fog, water)
+float camDist = length(wPos.xyz);
 
 
 float relativeDist = camDist / RENDER_DISTANCE;
