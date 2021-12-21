@@ -1,1 +1,6 @@
 *.h linguist-detectable=false
+
+*.h text eol=crlf
+*.vertex text eol=crlf 
+*.fragment text eol=crlf
+*.glsl text eol=crlf
