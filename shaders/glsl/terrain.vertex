@@ -615,7 +615,7 @@ if(isWater){
 		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
 
 		//if(is(uv1.y,0.81,0.82) || is(uv1.y,0.68,0.69) || is(uv1.y,0.56,0.57) || is(uv1.y,0.43,0.44) || is(uv1.y,0.31,0.32)){light.rgb=vec3(1.0,0.0,0.0);}
-		caustics *= ( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32)) ? 32.0 : 16.0 ;
+		caustics *= ( any(lessThan(abs(uv1.yyyy-vec4(0.815,0.685,0.565,0.435)),vec4(0.05))) || is(uv1.y,0.31,0.32)) ? 3.6 : 1.8 ;
 
 		light += caustics*underWaterColor*(0.1+lit.y+(lit.x*0.7))*caustic_intensity;
 
