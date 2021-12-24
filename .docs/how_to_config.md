@@ -1,1 +1,1 @@
-See [Customisation](/.docs/how_to_config.md)
+See [Customisation](https://devendrn.github.io/newb-shader/customization.html)
