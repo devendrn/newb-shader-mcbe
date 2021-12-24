@@ -241,6 +241,5 @@ if(rainFactor>0.0){
 	}
 }
 
-//light.rgb = TILE_LIGHT_COLOR.zzz;
 
 }

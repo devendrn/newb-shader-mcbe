@@ -374,8 +374,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		wave *= amplitude*uv1.y;
 
 		//worldPos.y -= 1.0-sqrt(1.0-wave*wave);
-		worldPos.y -= wave*wave*0.5;
-		worldPos.xz -= vec2(wave);
+		worldPos.xyz -= vec3(wave,wave*wave*0.5,wave);
 
 	}
 
@@ -502,13 +501,12 @@ if(isWater){
 	float fractCposY = fract(cPos.y);
 
 	// get water color (r-tint,g-lightness)
-	vec3 transmission = fresh_water_color;
-	if(COLOR.r < 0.5){ transmission = mix(marshy_water_color,transmission,COLOR.r*2.0);}
-	else{ transmission = mix(transmission,sea_water_color,(COLOR.r*2.0)-1.0);}
-	transmission *= COLOR.g;
+	vec3 waterCol = fresh_water_color;
+	waterCol = COLOR.r < 0.5 ? mix(marshy_water_color,waterCol,COLOR.r*2.0) : mix(waterCol,sea_water_color,(COLOR.r*2.0)-1.0);
+	waterCol *= COLOR.g;
 
-	transmission *= 0.3 + (FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor);
-	transmission *= light*max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2)*max(0.3+0.7*uv1.y,uv1.x);
+	waterCol *= 0.3 + (FOG_COLOR.g*(2.0-2.0*FOG_COLOR.g)*rainFactor);
+	waterCol *= light*max(max(FOG_COLOR.b,0.2+lit.x),FOG_COLOR.r*1.2)*max(0.3+0.7*uv1.y,uv1.x);
 
 	float cosR;
 	vec3 waterRefl;
@@ -533,7 +531,7 @@ if(isWater){
 			vec2 projectedPos = (0.7*wPos.xz*cloud_size) - parallax;
 
 			float fade = 0.1*length(projectedPos);
-			fade = (1.0 - clamp((fade-0.5)*2.0,0.0,1.0))*float(wPos.y<0.0);
+			fade = wPos.y<0.0 ? (1.0 - clamp((fade*2.0)-1.0,0.0,1.0)) : 0.0;
 
 			projectedPos += ((1.0-fade) - bump)*parallax;
 
@@ -549,18 +547,18 @@ if(isWater){
 		// sky,cloud reflection mask
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
 
-		//float isFreshWater = max((0.4-abs(COLOR.g-0.5))*2.5,0.0);
+		//float isFreshWater = max(1.0-2.5*abs(COLOR.g-0.5),0.0);
 		//float obstacle = 0.13*(0.5+0.5*sin(viewDir.x*8.0)*sin(viewDir.z*8.0));
 		//waterRefl *= vec3(0.4+0.6*smoothstep(obstacle,0.1+obstacle,max(viewDir.y,0.0)));
 
 		// ambient,torch light reflection
-		waterRefl += vec3(0.02*(1.0-uv1.y)) + torch_color*torch_intensity*(0.6*float(uv1.x>0.83) + lit.x*bump*10.0);
+		waterRefl += vec3(0.02-(0.02*uv1.y)) + torch_color*torch_intensity*((uv1.x>0.83 ? 0.6 : 0.0) + lit.x*bump*10.0);
 
 		// flat plane
 		if( is(fractCposY,0.8,0.9) ){ waterRefl *= 1.0 - 0.66*clamp(wPos.y,0.0,1.0); }
 
 		// slanted plane and highly slanted plane
-		else{ waterRefl *= (0.4+0.1*sin(t*2.0+cPos.y*12.566)) - 0.2*float(fractCposY > 0.9); }
+		else{ waterRefl *= (0.1*sin(t*2.0+cPos.y*12.566)) + (fractCposY > 0.9 ? 0.2 : 0.4);}
 	}
 
 	// reflection for side plane
@@ -580,7 +578,7 @@ if(isWater){
 		color.a = color.a + (1.0-color.a)*opacity*opacity;
 	#endif
 
-	color.rgb = transmission*(1.0-0.4*fresnel) + waterRefl*fresnel;
+	color.rgb = waterCol*(1.0-0.4*fresnel) + waterRefl*fresnel;
 
 }	//isWater
 
@@ -753,7 +751,7 @@ mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 
 /*
 // less precise normal
-vec3 nrmlow = vec3(0.0);
+vec3 nrmlow;
 nrmlow.y = -float(shade>0.9);
 nrmlow.z = float(shade>0.75 && shade<0.9);
 nrmlow.x = float(shade>0.4 && shade<0.75);

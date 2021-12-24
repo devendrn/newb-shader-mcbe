@@ -32,11 +32,8 @@ varying lowp float shade;
 
 // fast boolean normal for top surface (isY)
 bool isTopSurface(float y){
-
 	// check for change in Y in frag block
-	if(y<0.0){ return (dFdy(y) < 0.0001); }
-	else{ return false; }
-
+	return y < 0.0 ? (dFdy(y) < 0.0001) : false;
 }
 
 #endif
@@ -157,9 +154,6 @@ diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 // color correction
 diffuse.rgb = colorCorrection(diffuse.rgb);
 
-//diffuse.rgb = texture2D(TEXTURE_0, uv0).aaa;
-//diffuse.rgb = color.rgb;
-//diffuse.rgb = texture2D(TEXTURE_0, fract(color.rg*0.0625)).rgb;
 
 	gl_FragColor = diffuse;
 
