@@ -200,7 +200,9 @@ void main()
 	vec3 horizonEdgeCol = getHorizonEdgeCol(horizonCol,rainFactor);
 	if(underWater){
 		vec3 fogcol = getUnderwaterCol();
-		zenithCol,horizonCol,horizonEdgeCol = fogcol;
+		zenithCol = fogcol;
+		horizonCol = fogcol;
+		horizonEdgeCol = fogcol;
 	}
 
 

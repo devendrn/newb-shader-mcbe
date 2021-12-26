@@ -45,6 +45,9 @@ void main()
 	// underwater sky
 	if(underWater){
 		vec3 fogcol = getUnderwaterCol();
-		zenith_color,horizon_color,horizon_edge_color = fogcol;
+		zenith_color = fogcol;
+		horizon_color = fogcol;
+		horizon_edge_color = fogcol;
 	}
+
 }
