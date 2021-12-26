@@ -7,8 +7,6 @@
 
 #include "config_utilities/color.h"
 
-//varying vec3 zenith_color;
-//varying vec3 void_color;
 varying vec3 horizon_color;
 varying vec3 pos;
 
@@ -29,14 +27,11 @@ void main()
 	// rotate skybox
 	float sinA = sin(t);
 	float cosA = cos(t);
-	mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
-	rotatedPos.xz = rotate*rotatedPos.xz;
+	rotatedPos.xz = mat2(cosA,-sinA,sinA,cosA)*rotatedPos.xz;
 
 	gl_Position = WORLDVIEWPROJ * rotatedPos;
 
 	uv = 0.1*(UV_TRANSFORM * vec4(TEXCOORD_0, 0, 1)).xy;
 
-	//void_color = colorCorrection(vec3(0.16,0.06,0.2));
-	//zenith_color = colorCorrection(vec3(0.03,0.0,0.05));
 	horizon_color = colorCorrection(vec3(0.16,0.06,0.2));
 }

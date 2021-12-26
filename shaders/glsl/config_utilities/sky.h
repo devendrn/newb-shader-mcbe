@@ -21,6 +21,7 @@ const vec3 horizonEdgeCol = vec3(1.0,0.4,0.2);
 // color - Underwater fog color
 const vec3 underwaterBaseCol = vec3(0.0,0.6,1.0);
 
+
 /*""""""""""""""""""""""""""""""""""""""*/
 
 

@@ -20,8 +20,7 @@ varying vec4 mistColor;
 varying lowp vec4 wetRefl;
 
 #ifdef USE_SKINNING
-	varying lowp vec3 oPos1;
-	varying lowp vec3 oPos2;
+	varying lowp vec4 edgeMap;
 #endif
 
 varying lowp float rainFactor;
@@ -186,18 +185,16 @@ color.rgb *= color.rgb;
 
 #ifdef USE_SKINNING
 	// entity ambient
-	// this only works this way because oPos is incorrect
-	vec3 len = abs(oPos1)*abs(oPos2);
+	vec2 len = min(abs(edgeMap.xy),abs(edgeMap.zw));
 
-	//float ambient = 0.75*length(len.xy)*length(len.yz)*length(len.xz);
-	float ambient = 1.1*max(len.x,len.y)*max(len.y,len.z)*max(len.x,len.z);
-	ambient += oPos1.y*0.15;
-	ambient = clamp(ambient,0.0,1.0);
+	float ambient = max(len.x,len.y);
+	//ambient += oPos1.y*0.15;
+	ambient = clamp(ambient*ambient,0.0,1.0);
 #else
 	float ambient = 0.0;
 #endif
 
-color.rgb *= (0.7-rainFactor*0.25)+ambient*(0.4-rainFactor*0.1);
+color.rgb *= (0.7-rainFactor*0.25)+ambient*(0.45-rainFactor*0.1);
 
 // apply mist and fog
 color.rgb = mix( color.rgb, mistColor.rgb, mistColor.a );
@@ -224,7 +221,6 @@ color.rgb = colorCorrection(color.rgb);
 	color.a *= HUD_OPACITY;
 #endif
 
-//color.rgb = light.rgb;
 
 	gl_FragColor = color;
 }

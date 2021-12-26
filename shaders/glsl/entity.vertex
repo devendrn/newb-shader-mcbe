@@ -29,8 +29,7 @@ attribute vec4 NORMAL;
 	attribute float BONEID_0;
 #endif
 
-	varying lowp vec3 oPos1;
-	varying lowp vec3 oPos2;
+	varying lowp vec4 edgeMap;
 
 #endif
 
@@ -168,18 +167,15 @@ void main()
 
 #ifdef USE_SKINNING
 // don't do for small entities like item drops
-// relative position (needs more optimization)
-// some are incorrect - because POSITION is based on bone orgin not object orgin
-oPos1.x = float(POSITION.x<0.4);
-oPos1.y = float(POSITION.y<0.0);
-oPos1.z = float(POSITION.z<-0.1);
 
-oPos2.x = float(POSITION.x<0.0);
-oPos2.y = float(POSITION.y<0.9);
-oPos2.z = float(POSITION.z<-3.9);
+edgeMap = fract(vec4(uv.xy*128.0,uv.xy*256.0));
+edgeMap.x = float(edgeMap.x<0.5);
+edgeMap.y = float(edgeMap.y<0.5);
+edgeMap.z = float(edgeMap.z<0.5);
+edgeMap.w = float(edgeMap.w<0.5);
 
-oPos1 = oPos1*2.0 - vec3(1.0);
-oPos2 = oPos2*2.0 - vec3(1.0);
+edgeMap = 2.0*edgeMap - 1.0;
+
 #endif
 
 // soft shadow
