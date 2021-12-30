@@ -25,8 +25,7 @@ bool detectNether(){
 }
 
 bool detectUnderwater(){
-	// underwater is also given a custom fog color in biomes_client.json to help in detection (unnecessary as FOG_CONTROL.x<0.001 is enough)
-	return FOG_CONTROL.x<0.01 && FOG_COLOR.b>FOG_COLOR.r;
+	return FOG_CONTROL.x<0.001 && max(FOG_COLOR.b,FOG_COLOR.g)>FOG_COLOR.r;
 }
 
 // needs more optimisation
