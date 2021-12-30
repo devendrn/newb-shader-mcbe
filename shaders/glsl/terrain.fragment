@@ -29,13 +29,6 @@ varying lowp float shade;
 #ifdef FOG
 	varying float wPosY;
 	varying lowp vec4 wetRefl;
-
-// fast boolean normal for top surface (isY)
-bool isTopSurface(float y){
-	// check for change in Y in frag block
-	return y < 0.0 ? (dFdy(y) < 0.0001) : false;
-}
-
 #endif
 
 #if defined(BLEND) || defined(FAR_BLEND)
@@ -141,7 +134,7 @@ diffuse.rgb *= 1.0 + glow*0.3;
 	// wet effect
 	if(wetRefl.a > 0.0){
 		// only on xz plane
-		if(isTopSurface(wPosY)){
+		if(wPosY < 0.0 ? (dFdy(wPosY) < 0.0001) : false){
 			float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
 			diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
 		}
