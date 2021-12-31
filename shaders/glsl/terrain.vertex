@@ -155,9 +155,11 @@ void main()
 		worldPos.w = 1.0;
 	#endif
 
+
 	vec3 wPos = worldPos.xyz;
 	vec3 cPos = POSITION.xyz;
 	vec3 bPos = fract(cPos);
+
 
 #ifndef BYPASS_PIXEL_SHADER
 
@@ -481,8 +483,9 @@ float relativeDist = camDist / RENDER_DISTANCE;
 	if(color.a < 0.95) {
 		#ifdef FANCY
 			// fade out blended water layer to opaque layer
-			float alphaFadeOut = clamp(camDist / FAR_CHUNKS_DISTANCE, 0.0, 1.0);
-			color.a = mix(getWaterAlpha(COLOR.rgb)-0.0*float(underWater)*0.3, 1.0, 0.5*alphaFadeOut);
+			float alphaFadeOut = clamp(camDist/FAR_CHUNKS_DISTANCE, 0.0, 1.0);
+			color.a = getWaterAlpha(COLOR.rgb);
+			color.a = color.a + (0.5-0.5*color.a)*alphaFadeOut;
 		#else
 			color.a = 1.0;
 		#endif
@@ -493,10 +496,8 @@ float relativeDist = camDist / RENDER_DISTANCE;
 // mist (also used in underwater to decrease visibility)
 mistColor = renderMist(horizonEdgeCol, relativeDist, lit.x, rainFactor, nether,underWater,end);
 
-if(!(nether || underWater)){
-	mistColor.rgb *= max(0.75,uv1.y);
-	mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
-}
+mistColor.rgb *= max(0.75,uv1.y);
+mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
 
 
 #if defined(FOG) || defined(BLEND)
@@ -556,7 +557,7 @@ if(isWater){
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
 
 		//float isFreshWater = max(1.0-2.5*abs(COLOR.g-0.5),0.0);
-		//float obstacle = 0.13*(0.5+0.5*sin(viewDir.x*8.0)*sin(viewDir.z*8.0));
+		//float obstacle = 0.065+0.065*sin(viewDir.x*8.0)*sin(viewDir.z*8.0);
 		//waterRefl *= vec3(0.4+0.6*smoothstep(obstacle,0.1+obstacle,max(viewDir.y,0.0)));
 
 		// ambient,torch light reflection
