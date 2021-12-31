@@ -148,6 +148,9 @@ diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 diffuse.rgb = colorCorrection(diffuse.rgb);
 
 
+//diffuse = texture2D(TEXTURE_0, color.rg);
+
+
 	gl_FragColor = diffuse;
 
 #endif // BYPASS_PIXEL_SHADER
