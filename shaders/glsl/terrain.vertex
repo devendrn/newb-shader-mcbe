@@ -271,7 +271,7 @@ else{
 	float lightIntensity = sun_intensity*(1.0 - rainDim)*(1.0 + night_brightness*nightFactor);
 
 	// min ambient in caves
-	light = vec3(1.35*(1.0-uv1.x)*(1.0-uv1.y));
+	light = vec3((1.35+cave_brightness)*(1.0-uv1.x)*(1.0-uv1.y));
 
 	// sky ambient
 	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - rainDim));

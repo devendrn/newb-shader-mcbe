@@ -27,6 +27,9 @@
 // Value - Night extra brightness
 #define night_brightness 0.1
 
+// Value - Cave extra brightness
+#define cave_brightness 0.1
+
 // Value - Torch brightness
 #define torch_intensity 1.0
 
