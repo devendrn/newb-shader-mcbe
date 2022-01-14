@@ -1,19 +1,27 @@
 // __multiversion__
 
-#include "vertexVersionCentroidUV.h"
+#if __VERSION__ >= 300
+	#define attribute in
+	#define varying out
 
-#include "uniformWorldConstants.h"
-#include "uniformShaderConstants.h"
+	#ifndef MSAA_FRAMEBUFFER_ENABLED
+	#define centroid	#endif
+#else
+	#define centroid
+#endif
 
-#include "config_utilities/color.h"
-
-varying vec3 horizon_color;
-varying vec3 pos;
-
+uniform mat4 WORLDVIEWPROJ;
+uniform mat4 UV_TRANSFORM;
 uniform highp float TOTAL_REAL_WORLD_TIME;
 
 attribute POS4 POSITION;
 attribute vec2 TEXCOORD_0;
+
+centroid varying vec2 uv;
+varying vec3 horizon_color;
+varying vec3 pos;
+
+#include "config_utilities/color_correction.h"
 
 void main()
 {

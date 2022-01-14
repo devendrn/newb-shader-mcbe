@@ -1,22 +1,26 @@
 // __multiversion__
 
-#include "vertexVersionSimple.h"
+#if __VERSION__ >= 300
+	#define attribute in
+	#define varying out
+#endif
 
-#include "uniformWorldConstants.h"
-#include "uniformPerFrameConstants.h"
-#include "uniformShaderConstants.h"
-
-#include "utilities/noise.glsl"
-#include "utilities/detectors.glsl"
-#include "config_utilities/clouds.h"
-
-#include "config_utilities/global.h"
-
+uniform mat4 WORLDVIEWPROJ;
+uniform mat4 WORLD;
+uniform vec4 FOG_COLOR;
+uniform vec2 FOG_CONTROL;
+uniform float RENDER_DISTANCE;
+uniform vec4 CURRENT_COLOR;
 uniform highp float TOTAL_REAL_WORLD_TIME;
 
 attribute mediump vec4 POSITION;
 
 varying vec4 color;
+
+#include "utilities/noise.glsl"
+#include "utilities/detectors.glsl"
+#include "config_utilities/clouds.h"
+#include "config_utilities/global.h"
 
 void main()
 {
@@ -35,13 +39,9 @@ void main()
 	gl_Position = pos;
 
 	//// time
-	#ifdef USE_REAL_WORLD_TIME
-		// in seconds, resets to 0 every hour (3600 = 1 hour)
-		// we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
-		highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
-	#else
-		highp float t = TIME;
-	#endif
+	// in seconds, resets to 0 every hour (3600 = 1 hour)
+	// we remap 0-3600 to 0-1800-0 and adjust speed by 0.55
+	highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
 
 	float rain = detectRain(false);
 

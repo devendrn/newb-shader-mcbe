@@ -2,65 +2,75 @@
 
 precision lowp float;
 
+uniform mat4 WORLDVIEWPROJ;
+uniform mat4 WORLD;
+uniform mat4 WORLDVIEW;
+uniform mat4 PROJ;
+uniform vec3 VIEW_POS;
+uniform vec4 FOG_COLOR;
+uniform vec2 FOG_CONTROL;
+uniform float RENDER_DISTANCE;
+uniform float FAR_CHUNKS_DISTANCE;
+uniform float OCCLUSION_HEIGHT_OFFSET;
+uniform vec4 CURRENT_COLOR;
+uniform vec4 DARKEN;
+uniform vec3 TEXTURE_DIMENSIONS;
+uniform float HUD_OPACITY;
+uniform mat4 UV_TRANSFORM;
+uniform POS4 CHUNK_ORIGIN_AND_SCALE;
+uniform float RENDER_CHUNK_FOG_ALPHA;
+uniform highp float TOTAL_REAL_WORLD_TIME;
+
+
 #ifndef BYPASS_PIXEL_SHADER
 
 #if __VERSION__ >= 300
-	#ifdef MSAA_FRAMEBUFFER_ENABLED
-		centroid out vec2 uv0;
-		centroid out vec2 uv1;
-	#else
-		out vec2 uv0;
-		out vec2 uv1;
-	#endif
-
 	#define attribute in
 	#define varying out
+
+	#ifndef MSAA_FRAMEBUFFER_ENABLE
+	#define centroid
+	#endif
 #else
-	varying vec2 uv0;
-	varying vec2 uv1;
+	#define centroid
 #endif
 
+	centroid varying vec2 uv0;
+	centroid varying vec2 uv1;
 	varying vec4 color;
 	varying vec4 mistColor;
 	varying lowp float shade;
 
-#ifdef SEASONS
+	#ifdef SEASONS
 	varying vec3 sCol;
-#endif
+	#endif
 
-#ifdef FOG
+	#ifdef FOG
 	varying float wPosY;
 	varying lowp vec4 wetRefl;
-#endif
+	#endif
 
-#if defined(BLEND) || defined(FAR_BLEND)
+	#if defined(BLEND) || defined(FAR_BLEND)
 	#define MAYBE_WATER
 	varying lowp float water;
-#endif
+	#endif
 
 #endif	// !BYPASS_PIXEL_SHADER
-
-#include "uniformWorldConstants.h"
-#include "uniformPerFrameConstants.h"
-#include "uniformShaderConstants.h"
-#include "uniformRenderChunkConstants.h"
 
 #include "utilities/detectors.glsl"
 #include "config_utilities/sky.h"
 #include "utilities/noise.glsl"
-#include "config_utilities/mist_fog.h"
 #include "config_utilities/clouds.h"
 #include "config_utilities/global.h"
 #include "config_utilities/terrain.h"
-
-uniform highp float TOTAL_REAL_WORLD_TIME;
 
 attribute POS4 POSITION;
 attribute vec4 COLOR;
 attribute vec2 TEXCOORD_0;
 attribute vec2 TEXCOORD_1;
 
-const float rd = 1.57079; // pi by 2
+
+const float rd = 1.570796; // pi by 2
 const float shadowIntensity = 1.0-shadow_intensity;
 
 
@@ -217,13 +227,9 @@ void main()
 
 
 // time
-#ifdef USE_REAL_WORLD_TIME
-	// we remap 0-3600s to 0-1800-0s and adjust speed by 0.55
-	// not ideal as it will reverse after 1800
-	highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
-#else
-	highp float t = TIME;
-#endif
+// we remap 0-3600s to 0-1800-0s and adjust speed by 0.55
+// not ideal as it will reverse after 1800
+highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
 
 
 // convert color space to linear-space for color correction (not entirely accurate)
@@ -758,22 +764,20 @@ mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 #endif
 
 
-/*
+
 // less precise normal
-vec3 nrmlow;
-nrmlow.y = -float(shade>0.9);
-nrmlow.z = float(shade>0.75 && shade<0.9);
-nrmlow.x = float(shade>0.4 && shade<0.75);
-nrmlow *= sign(wPos);
+vec3 nrmlow = vec3(
+		float(shade>0.4 && shade<0.75),		-float(shade>0.9),
+		float(shade>0.75 && shade<0.9)
+	)*sign(wPos);
 
 #ifdef ALPHA_TEST
 nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
 #endif
-*/
 
-//if(isTree){color.rgb *= 20.0;}
 
-//color.rg = cPos.xz/16.0;
+//color.rgb = nrmlow;
+
 
 #endif	//!BYPASS_PIXEL_SHADER
 

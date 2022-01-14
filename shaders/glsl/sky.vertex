@@ -5,14 +5,11 @@
 	#define varying out
 #endif
 
-#include "uniformWorldConstants.h"
-
+//uniform mat4 WORLD;
+uniform mat4 WORLDVIEWPROJ;
 uniform vec4 FOG_COLOR;
 uniform vec2 FOG_CONTROL;
 uniform float RENDER_DISTANCE;
-
-#include "utilities/detectors.glsl"
-#include "config_utilities/sky.h"
 
 attribute mediump vec4 POSITION;
 attribute vec4 COLOR;
@@ -21,6 +18,9 @@ varying vec3 zenith_color;
 varying vec3 horizon_color;
 varying vec3 horizon_edge_color;
 varying vec3 wPos;
+
+#include "utilities/detectors.glsl"
+#include "config_utilities/sky.h"
 
 void main()
 {

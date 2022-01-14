@@ -15,7 +15,7 @@
 //#define EXPOSURE 1.3
 
 // Value - Contrast
-#define CONTRAST 0.73
+#define CONTRAST 0.74
 
 // Toggle + Value - Saturation
 //#define SATURATION 1.4

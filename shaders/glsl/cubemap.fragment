@@ -6,11 +6,10 @@
 	#define gl_FragColor FragColor
 #endif
 
-#include "config_utilities/color.h"
-
 varying vec4 color;
-
 //varying vec3 pos;
+
+#include "config_utilities/color_correction.h"
 
 void main()
 {

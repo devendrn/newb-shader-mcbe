@@ -6,7 +6,7 @@
 #include "uniformShaderConstants.h"
 #include "util.h"
 
-#include "config_utilities/color.h"
+#include "config_utilities/color_correction.h"
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1;

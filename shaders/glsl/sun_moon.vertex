@@ -1,8 +1,20 @@
 // __multiversion__
 
-#include "vertexVersionCentroidUV.h"
+#if __VERSION__ >= 300
+	#define attribute in
+	#define varying out
 
-#include "uniformWorldConstants.h"
+	#ifndef MSAA_FRAMEBUFFER_ENABLED
+	#define centroid	#endif
+#else
+	#define centroid
+#endif
+
+uniform mat4 WORLDVIEWPROJ;
+
+attribute POS4 POSITION;
+attribute vec2 TEXCOORD_0;
+centroid varying vec2 uv;
 
 #include "config_utilities/extra.h"
 
@@ -12,9 +24,6 @@
 	const float cosA = cos(angle);
 	const mat2 rotate = mat2(cosA,-sinA,sinA,cosA);
 #endif
-
-attribute POS4 POSITION;
-attribute vec2 TEXCOORD_0;
 
 void main()
 {

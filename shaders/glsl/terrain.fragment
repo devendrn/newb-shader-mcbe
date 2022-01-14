@@ -1,25 +1,30 @@
 // __multiversion__
 
-#include "fragmentVersionCentroid.h"
+#if __VERSION__ >= 300
+	#ifndef MSAA_FRAMEBUFFER_ENABLED
+	#define centroid
+	#endif
+
+	#define varying in
+	#define texture2D texture
+	out vec4 FragColor;
+	#define gl_FragColor FragColor
+#else
+	#define centroid
+#endif
 
 #ifndef BYPASS_PIXEL_SHADER
 
-#if __VERSION__ >= 300
-	#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
-		_centroid in highp vec2 uv0;
-		_centroid in highp vec2 uv1;
-	#else
-		_centroid in vec2 uv0;
-		_centroid in vec2 uv1;
-	#endif
+#if __VERSION__ >= 300 && defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
+	centroid in highp vec2 uv0;
+	centroid in highp vec2 uv1;
 #else
-	varying vec2 uv0;
-	varying vec2 uv1;
+	centroid varying vec2 uv0;
+	centroid varying vec2 uv1;
 #endif
 
 varying vec4 color;
 varying vec4 mistColor;
-
 varying lowp float shade;
 
 #ifdef SEASONS
@@ -41,7 +46,7 @@ varying lowp float shade;
 #include "uniformShaderConstants.h"
 #include "util.h"
 
-#include "config_utilities/color.h"
+#include "config_utilities/color_correction.h"
 #include "config_utilities/extra.h"
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
@@ -150,6 +155,7 @@ diffuse.rgb = colorCorrection(diffuse.rgb);
 
 //diffuse = texture2D(TEXTURE_0, color.rg);
 
+//diffuse.rgb = color.rgb;
 
 	gl_FragColor = diffuse;
 

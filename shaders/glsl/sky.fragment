@@ -6,12 +6,12 @@
 	#define gl_FragColor FragColor
 #endif
 
-#include "config_utilities/color.h"
-
 varying vec3 zenith_color;
 varying vec3 horizon_color;
 varying vec3 horizon_edge_color;
 varying vec3 wPos;
+
+#include "config_utilities/color_correction.h"
 
 vec3 renderSky(vec3 reddishTint, vec3 horizonColor, vec3 zenithColor, float h){
 
