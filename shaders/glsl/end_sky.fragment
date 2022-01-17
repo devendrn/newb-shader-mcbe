@@ -1,29 +1,22 @@
 // __multiversion__
 
+#include "fragmentVersionCentroid.h"
+
 #if __VERSION__ >= 300
-	#ifndef MSAA_FRAMEBUFFER_ENABLED
-	#define centroid
-	#endif
-
-	#define varying in
-	#define texture2D texture
-	out vec4 FragColor;
-	#define gl_FragColor FragColor
-
 	#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
-		centroid in highp vec2 uv;
+		_centroid in highp vec2 uv;
 	#else
-		centroid in vec2 uv;
+		_centroid in vec2 uv;
 	#endif
 #else
 	varying vec2 uv;
 #endif
 
-varying vec3 horizon_color;
-varying vec3 pos;
-
 #include "uniformShaderConstants.h"
 #include "util.h"
+
+varying vec3 horizon_color;
+varying vec3 pos;
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 

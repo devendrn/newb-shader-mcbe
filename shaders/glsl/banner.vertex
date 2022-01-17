@@ -51,6 +51,11 @@ attribute vec4 COLOR;
 	varying vec4 color;
 #endif
 
+const float AMBIENT = 0.45;
+
+const float XFAC = -0.1;
+const float ZFAC = 0.1;
+
 float lightIntensity(){
 #ifdef FANCY
 
@@ -84,11 +89,11 @@ float lightIntensity(){
 	#endif	//FLIP_BACKFACES
 
 	//float yLight = (1.0+N.y) * 0.5;
-	//return yLight*(1.0-0.45) - N.x*N.x*0.1 + N.z*N.z*0.1 + 0.45;
+	//return yLight*(1.0-AMBIENT) + N.x*N.x*XFAC + N.z*N.z*ZFAC + AMBIENT;
 
 	N.xz *= N.xz;
 
-	float light =  (0.5 + N.y*0.5)*(1.0-0.45) - N.x*0.1 + N.z*0.1 + 0.45;
+	float light =  (0.5 + N.y*0.5)*(1.0-AMBIENT) + N.x*XFAC + N.z*ZFAC + AMBIENT;
 
 	float lit = TILE_LIGHT_COLOR.b*TILE_LIGHT_COLOR.b*sun_intensity*1.3;
 
