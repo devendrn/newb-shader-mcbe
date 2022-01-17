@@ -658,14 +658,16 @@ if(rainFactor > 0.0){
 	// wet effect
 	float endDist = RENDER_DISTANCE*0.6;
 
+	// puddles map
+	float wetness;
+	if(chunkBorder){ wetness = max(0.5+0.5*sin((cPos.x+cPos.z)*rd),0.6);}
+	else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
+	wetness *= lit.y*lit.y;
+
+	// darken wet parts
+	color.rgb *= 1.0-0.5*wetness*rainFactor;
+
 	if(!isWater && camDist < endDist){
-
-		// puddles map
-		float wetness;
-		if(chunkBorder){ wetness = max(0.5+0.5*sin((cPos.x+cPos.z)*rd),0.6);}
-		else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
-		wetness *= lit.y*lit.y;
-
 		// cosine of incidence angle
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
 
@@ -682,12 +684,6 @@ if(rainFactor > 0.0){
 
 		// hide effect far from player
 		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0,0.0,1.0 );
-
-		// darken wet parts
-		color.rgb *= 1.0-0.5*wetness*rainFactor;
-	}
-	else{
-		color.rgb *= 1.0-0.4*lit.y*lit.y*rainFactor;
 	}
 
 }
