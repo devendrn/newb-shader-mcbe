@@ -1,4 +1,4 @@
-# How to contribute
+# How to contribute (in code)
 
 ### Prerequisite
 - Basic understanding of GLSL
