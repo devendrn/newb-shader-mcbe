@@ -118,12 +118,14 @@ vec4 inColor = color;
 
 /// apply color and lighting
 #ifdef MAYBE_WATER
-	// ignore water texture and replace it with vertex calculated water
-	if(water>0.5){diffuse = inColor;}
-	else{ diffuse.rgb *= inColor.rgb; }
-#else
-	diffuse.rgb *= inColor.rgb;
+	// edit water texture and apply transparency
+	if(water>0.5){
+		diffuse.rgb = vec3(mix(1.0,diffuse.b*1.8,WATER_TEX_OPACITY));
+		diffuse.a = inColor.a;
+	}
 #endif
+
+	diffuse.rgb *= inColor.rgb;
 
 // light glow
 float glow = uv1.x*uv1.x;

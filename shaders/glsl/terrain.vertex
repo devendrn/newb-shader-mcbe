@@ -48,7 +48,6 @@ precision lowp float;
 #include "utilities/detectors.glsl"
 #include "config_utilities/sky.h"
 #include "utilities/noise.glsl"
-#include "config_utilities/mist_fog.h"
 #include "config_utilities/clouds.h"
 #include "config_utilities/global.h"
 #include "config_utilities/terrain.h"

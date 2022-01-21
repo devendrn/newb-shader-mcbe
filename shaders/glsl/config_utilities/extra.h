@@ -25,3 +25,12 @@
 #define circle_invert_value 0.5
 
 /*""""""""""""""""""""""""""""""""""""""*/
+
+
+/*""""""""""""""""""""""""""""""""""""""*/
+/* WATER TEXTURE DETAILS */
+
+// Value - Vanilla water texture details (0-1)
+#define WATER_TEX_OPACITY 0.0
+
+/*""""""""""""""""""""""""""""""""""""""*/
