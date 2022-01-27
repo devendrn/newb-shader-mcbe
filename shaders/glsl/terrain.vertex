@@ -15,6 +15,7 @@ precision lowp float;
 
 	#define attribute in
 	#define varying out
+	#define texture2D texture
 #else
 	varying vec2 uv0;
 	varying vec2 uv1;
@@ -52,7 +53,7 @@ precision lowp float;
 #include "config_utilities/global.h"
 #include "config_utilities/terrain.h"
 
-uniform highp float TOTAL_REAL_WORLD_TIME;
+uniform highp float TOTAL_REAL_WORLD_TIME;uniform sampler2D TEXTURE_0;
 
 attribute POS4 POSITION;
 attribute vec4 COLOR;
@@ -314,6 +315,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	vec2 texMap = uv0*vec2(64.0,32.0);
 	vec2 texNo = ceil(texMap);
 	float texPosY = fract(texMap.y);
+	vec4 tex0 = texture2D(TEXTURE_0,uv0);
 
 	#ifdef PLANTS_WAVE
 
@@ -321,12 +323,15 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		bool shouldWave = true;
 	#else
 
+	float tex0lum = tex0.r+tex0.g+tex0.b;
+
 	bool isTop = texPosY < 0.5 || (texNo.y==6.0 && (texNo.x==12.0||texNo.x==13.0));
-	bool isTreeLeaves = COLOR.a==0.0 && max(COLOR.g,COLOR.r)>0.37;
+	bool isTreeLeaves = (COLOR.a==0.0 || tex0.a>0.99) && max(COLOR.g,COLOR.r)>0.37 && bPos.x+bPos.y+bPos.z<0.01;
 	bool isPlants = (COLOR.r/COLOR.g<1.9);
 	bool isVines = bPos.y==0.0 && (bPos.x==0.046875 || is(bPos.z,0.0468,0.06) || bPos.x==0.953125 || bPos.z==0.953125);
 	bool isFarmPlant = (bPos.y==0.9375) && any( equal(bPos.xzxz,vec4(0.25,0.25,0.75,0.75)) ); 
 	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
+	bool isGrassTop = tex0.a<0.01 && tex0lum>2.99;
 
 	// darken plants bottom - better to not move it elsewhere
 	light *= isFarmPlant && !isTop ? 0.65 : 1.0;
@@ -341,7 +346,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		// spore blossom petal
 		shouldWave = shouldWave || ( (bPos.x==0.5 || bPos.z==0.5) && bPos.y==0.46875);
 
-			shouldWave = shouldWave || ( (
+		shouldWave = shouldWave || ( ( ( (
 			(texNo.y==5.0 && texNo.x>61.9 ) ||		// long bush bottom 1
 			(texNo.y==6.0 && texNo.x<5.1 ) ||		// long bush bottom 2
 			(texNo.y==10.0 && texNo.x>46.9 ) ||		// flowers
@@ -351,7 +356,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		) && isTop) || (
 			(texNo.y==6.0 && is(texNo.x,4.9,11.1) ) ||	// long bushes top
 			(texNo==vec2(32.0,13.0))	// sunflower green pad
-		);
+		) )  && tex0.a<0.01 && tex0lum<0.01);
 	#endif
 
 	#endif
@@ -372,7 +377,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			amplitude *= isVines ? 0.1 + 0.4*cos(cPos.y*3.14159) : 1.0;
 
 			// wave the bottom of plants in opposite direction to make it look fixed
-			if(isPlants && isColored && !isTop && !isVines){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
+			if(isPlants && isColored && !(isGrassTop || isVines || isTreeLeaves)){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
 
 		#endif
 
@@ -771,8 +776,6 @@ nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
 */
 
 //if(isTree){color.rgb *= 20.0;}
-
-//color.rg = cPos.xz/16.0;
 
 #endif	//!BYPASS_PIXEL_SHADER
 
