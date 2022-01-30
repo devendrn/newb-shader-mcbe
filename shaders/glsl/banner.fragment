@@ -1,12 +1,8 @@
 // __multiversion__
 
 #include "fragmentVersionCentroid.h"
-
 #include "uniformShaderConstants.h"
-
 #include "config_utilities/color.h"
-
-LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 
 #if __VERSION__ >= 300
 	_centroid varying vec4 uv;
@@ -15,17 +11,18 @@ LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 #endif
 
 #ifdef ENABLE_FOG
-	varying vec4 fogColor;
 	varying vec4 mistColor;
 #endif
 
 #ifdef ENABLE_LIGHT
-	varying vec4 light;
+	varying vec3 light;
 #endif
 
 #ifndef DISABLE_TINTING
 	varying vec4 color;
 #endif
+
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 
 void main()
 {
@@ -33,7 +30,7 @@ void main()
 	vec4 base = texture2D(TEXTURE_0, uv.zw);
 
 	#ifndef DISABLE_TINTING
-		base.a = mix(diffuse.r * diffuse.a, diffuse.a, color.a);
+		base.a = mix(diffuse.r*diffuse.a,diffuse.a,color.a);
 		base.rgb *= color.rgb;
 	#endif
 
@@ -47,8 +44,7 @@ void main()
 
 	#ifdef ENABLE_FOG
 		//apply mist and fog
-		base.rgb = mix( base.rgb, mistColor.rgb, mistColor.a );
-		base.rgb = mix( base.rgb, fogColor.rgb, fogColor.a );
+		base.rgb = mix(base.rgb,mistColor.rgb,mistColor.a);
 	#endif
 
 	// color correction
