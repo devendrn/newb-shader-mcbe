@@ -59,7 +59,7 @@ varying float rainFactor;
 	varying vec4 glintColor;
 #endif
 
-vec3 matmulxyz(mat4 w, vec4 p){
+highp vec3 matmulxyz(highp mat4 w, highp vec4 p){
 	return vec3(
 		dot(vec4(w[0][0],w[1][0],w[2][0],w[3][0]),p),
 		dot(vec4(w[0][1],w[1][1],w[2][1],w[3][1]),p),
@@ -73,7 +73,7 @@ vec3 lighting(vec4 position, vec4 normal){
 	vec3 light;
 
 	#ifdef FANCY
-		vec3 N = normalize(matmulxyz(WORLD,normal));
+		highp vec3 N = normalize(matmulxyz(WORLD,normal));
 
 		//take care of double sided polygons on materials without culling
 		#ifdef FLIP_BACKFACES
@@ -222,8 +222,8 @@ if(underWater){
 // wet effect
 wetRefl.a = 0.0;
 if(rainFactor>0.0 && pos.z<30.0){
-	vec3 wPos = matmulxyz(WORLD,entitySpacePosition);
-	vec3 dir = matmulxyz(WORLD,entitySpaceNormal);
+	highp vec3 wPos = matmulxyz(WORLD,entitySpacePosition);
+	highp vec3 dir = matmulxyz(WORLD,entitySpaceNormal);
 
 	float nrmY = dir.y/sqrt(dot(dir,dir));
 
