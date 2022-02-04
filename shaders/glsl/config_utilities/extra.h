@@ -13,7 +13,7 @@
 /* GLOW TEXTURES */
 
 // Toggle + Value - Glow textures (brightness)
-#define GLOW_TEX 1.6
+#define GLOW_TEX 1.7
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
