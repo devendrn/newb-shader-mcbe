@@ -611,12 +611,6 @@ if(isWater){
 		gl_Position.xy += vec2(UNDERWATER_WAVE*min(0.05*pos.z,0.6)*sin(t*1.2 + dot(cPos,vec3(rd))));
 	#endif
 
-	#ifdef WAVE_ABOVE_WATER
-	if(uv1.y > 0.93){	// top waving refraction
-		gl_Position.xy += vec2(min(wPos.y*0.012,1.5)*sin(t*1.8 + dot(wPos,vec3(0.1)) + dot(cPos,vec3(rd)) ));
-	}
-	#endif
-
 	// soft caustic effect
 	if(uv1.y < 0.9){
 		vec3 underWaterColor = mix(underwater_color,vec3(1.0),lit.y*0.7);
