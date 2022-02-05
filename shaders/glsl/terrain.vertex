@@ -53,7 +53,7 @@ precision lowp float;
 #include "config_utilities/global.h"
 #include "config_utilities/terrain.h"
 
-uniform highp float TOTAL_REAL_WORLD_TIME;uniform sampler2D TEXTURE_0;
+uniform highp float TOTAL_REAL_WORLD_TIME;uniform lowp sampler2D TEXTURE_0;
 
 attribute POS4 POSITION;
 attribute vec4 COLOR;
@@ -170,8 +170,7 @@ void main()
 	vec2 lit = uv1*uv1;
 
 	bool isColored = (color.g > min(color.r,color.b)) || !(color.r==color.g && color.r==color.b);
-	//bool isColored = max(color.r,max(color.g,color.b)) > min(color.r,min(color.g,color.b));
-	//bool isColored = dot(abs(color.rgb-color.rrr),vec3(1.0))>0.0;
+	//bool isColored = dot(abs(color.gb-color.rr),vec2(1.0))>0.0;
 
 	bool chunkBorder = (fract(cPos.x*0.0625)*fract(cPos.z*0.0625) == 0.0);
 
@@ -311,11 +310,13 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 #ifdef ALPHA_TEST
 
-	// texture space - (64x32) textures in uv0.xy (textures after first 16 rows of uv0.y are black?)
+	// texture space - (64x32) textures in uv0.xy
 	vec2 texMap = uv0*vec2(64.0,32.0);
-	vec2 texNo = ceil(texMap);
 	float texPosY = fract(texMap.y);
 	vec4 tex0 = texture2D(TEXTURE_0,uv0);
+
+	int texNoX = int(texMap.x);
+	int texNoY = int(texMap.y);
 
 	#ifdef PLANTS_WAVE
 
@@ -325,7 +326,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	float tex0lum = tex0.r+tex0.g+tex0.b;
 
-	bool isTop = texPosY < 0.5 || (texNo.y==6.0 && (texNo.x==12.0||texNo.x==13.0));
+	bool isTop = texPosY<0.5;
 	bool isTreeLeaves = (COLOR.a==0.0 || tex0.a>0.99) && max(COLOR.g,COLOR.r)>0.37 && bPos.x+bPos.y+bPos.z<0.01;
 	bool isPlants = (COLOR.r/COLOR.g<1.9);
 	bool isVines = bPos.y==0.0 && (bPos.x==0.046875 || is(bPos.z,0.0468,0.06) || bPos.x==0.953125 || bPos.z==0.953125);
@@ -335,7 +336,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	// darken plants bottom - better to not move it elsewhere
 	light *= isFarmPlant && !isTop ? 0.65 : 1.0;
-	if(isColored && !isTreeLeaves && texNo.y==13.0){
+	if(isColored && !isTreeLeaves && texNoY==12){
 		light *= isTop ? 1.2 : 1.2 - (bPos.y>0.0 ? 1.5-bPos.y : 0.5);
 	}
 
@@ -347,16 +348,16 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		shouldWave = shouldWave || ( (bPos.x==0.5 || bPos.z==0.5) && bPos.y==0.46875);
 
 		shouldWave = shouldWave || ( ( ( (
-			(texNo.y==5.0 && texNo.x>61.9 ) ||		// long bush bottom 1
-			(texNo.y==6.0 && texNo.x<5.1 ) ||		// long bush bottom 2
-			(texNo.y==10.0 && texNo.x>46.9 ) ||		// flowers
-			(texNo.y==11.0 && is(texNo.x,19.9,27.1) ) ||	// tree shurbs
-			(texNo.y==13.0 && is(texNo.x,29.0,40.0) ) ||	// berry bush
-			(texNo.y==14.0 && (texNo.x==48.0 || texNo.x==28.0) )	// wither rose & dandelion
+			(texNoY==4 && texNoX>60) ||		// long bush bottom 1
+			(texNoY==5 && texNoX>0 && texNoX<4) ||		// long bush bottom 2
+			(texNoY==9 && texNoX>45) ||		// flowers
+			(texNoY==10 && texNoX>19 && texNoX<27) ||	// tree shurbs
+			(texNoY==12 && texNoX>31 && texNoX<37) ||	// berry bush
+			(texNoY==13 && (texNoX==47 || texNoX==27))	// wither rose & dandelion
 		) && isTop) || (
-			(texNo.y==6.0 && is(texNo.x,4.9,11.1) ) ||	// long bushes top
-			(texNo==vec2(32.0,13.0))	// sunflower green pad
-		) )  && tex0.a<0.01 && tex0lum<0.01);
+			(texNoY==5 && texNoX>4 && texNoX<13) ||	// long bushes top
+			(texNoY==12 && texNoX==31)	// sunflower green pad
+		) )  && tex0.a<0.01 && (tex0lum<0.01 || tex0lum>2.99));
 	#endif
 
 	#endif
@@ -776,6 +777,11 @@ nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
 */
 
 //if(isTree){color.rgb *= 20.0;}
+
+#ifndef ALPHA_TEST
+//color.rg = cPos.xz;
+//color.b = float(TEXTURE_DIMENSIONS.x==2048.0);
+#endif
 
 #endif	//!BYPASS_PIXEL_SHADER
 

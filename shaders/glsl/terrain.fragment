@@ -149,9 +149,11 @@ diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 // color correction
 diffuse.rgb = colorCorrection(diffuse.rgb);
 
+#ifndef ALPHA_TEST
+//diffuse = texture2D(TEXTURE_0, color.rg*0.125);
+#endif
 
-//diffuse = texture2D(TEXTURE_0, color.rg);
-
+//diffuse.rgb = color.bbb;
 
 	gl_FragColor = diffuse;
 
