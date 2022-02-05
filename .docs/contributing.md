@@ -53,5 +53,5 @@ Send a pull request for your branch through the github page citing the changes m
 ### Things you could do
 - Add new feature
 - Improve an existing feature
-- Fix a Bug
+- Fix a bug
 - Optimize the code
