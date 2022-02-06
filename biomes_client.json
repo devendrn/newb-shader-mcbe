@@ -8,7 +8,7 @@
     "default": {
       "water_surface_color": "#7FBF00",
       "water_surface_transparency": 0.65,
-      "fog_identifier": "minecraft:fog_default",
+      "fog_identifier": "newb:fog_default",
       "remove_all_prior_fog": false,
       "inherit_from_prior_fog": false
     },

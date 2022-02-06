@@ -21,7 +21,10 @@ bool detectNether(){
 	bool netherFogCtrl = (FOG_CONTROL.x<0.14  && abs(FOG_CONTROL.x-expectedFogX) < 0.02);
 	bool netherFogCol = (FOG_COLOR.r+FOG_COLOR.g)>0.0;
 
-	return (netherFogCtrl && netherFogCol);
+	// consider underlava as nether
+	bool underLava = FOG_CONTROL.x==0.0 && FOG_COLOR.b==0.0 && FOG_COLOR.g<0.18 && FOG_COLOR.r-FOG_COLOR.g>0.1;
+
+	return (netherFogCtrl && netherFogCol) || underLava;
 }
 
 bool detectUnderwater(){
