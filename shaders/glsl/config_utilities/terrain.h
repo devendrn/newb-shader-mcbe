@@ -104,6 +104,9 @@ const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 // Value - Wave intensity
 #define UNDERWATER_WAVE 0.06
 
+// Toggle - Wave effect above water surface when underwater
+//#define WAVE_ABOVE_WATER
+
 // Value - Underwater brightness
 #define underwater_brightness 0.8
 
