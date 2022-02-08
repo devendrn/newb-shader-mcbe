@@ -13,8 +13,6 @@ bool detectNether(){
 	// x range (0.03,0.14) 
 
 	// reverse plotted relation (5,6,7,8,9,11,12,20,96 chunks data) with an accuracy of 0.02
-	//float expectedFogX = 0.034 + (0.09*FOG_CONTROL.y*FOG_CONTROL.y*FOG_CONTROL.y); // accuracy of 0.02
-	//float expectedFogX = 0.168 - 0.136*exp(-FOG_CONTROL.y*FOG_CONTROL.y*FOG_CONTROL.y);	// accuracy of 0.015
 	float expectedFogX = 0.029 + (0.09*FOG_CONTROL.y*FOG_CONTROL.y);	// accuracy of 0.015
 
 	// nether wastes, basalt delta, crimson forest, wrapped forest, soul sand valley
@@ -31,36 +29,25 @@ bool detectUnderwater(){
 	return FOG_CONTROL.x<0.001 && max(FOG_COLOR.b,FOG_COLOR.g)>FOG_COLOR.r;
 }
 
-// needs more optimisation
-float detectRain(bool underWater){
 
-	// based on transition of FOG_CONTROL.xy
+float detectRain(){
 
-	// normal FOG_CONTROL.x varies with RENDER_DISTANCE
-	// reverse plotted as 0.5 + 1.09/(k-0.8) where k is renderdistance in chunks
-	float fogStart = 0.5 + (1.09/((RENDER_DISTANCE*0.0625)-0.8));
+	// FOG_CONTROL values when clear/rain
+	// clear FOG_CONTROL.x varies with RENDER_DISTANCE
+	// reverse plotted (low accuracy) as 0.5 + 1.09/(k-0.8) where k is renderdistance in chunks
+	// remaining values are equal to those specified in json file
+	vec2 start = vec2(0.5 + (1.09/((RENDER_DISTANCE*0.0625)-0.8)),0.99);
+	const vec2 end = vec2(0.2305,0.7005);
 
-	// for MCPE 1.16 - mapped from screenshot
-	vec2 start = vec2(fogStart,0.99);
-	const vec2 end = vec2(0.24,0.7);
+	if(FOG_CONTROL.y < start.y && FOG_CONTROL.x < start.x && FOG_CONTROL.x > 0.1){
 
-	if(!underWater && FOG_CONTROL.y < start.y && FOG_CONTROL.x < start.x && FOG_CONTROL.x > 0.1){
+		float factorX = clamp((start.x-FOG_CONTROL.x)/(start.x-end.x),0.0,1.0);
+		float factorY = clamp((start.y-FOG_CONTROL.y)/(start.y-end.y),0.0,1.0);
 
-		//vec2 rainStep = smoothstep(start,end,FOG_CONTROL.xy);
-		//float factor = rainStep.x*rainStep.y;
+		// ease in ease out
+		factorY = factorY*factorY*(3.0 - 2.0*factorY);
 
-		float factor = 1.0-clamp((FOG_CONTROL.y-0.7)/(0.99-0.7),0.0,1.0);
-
-		//ease in ease out using cos
-		factor = 0.5-cos(factor*3.14159265)*0.5;
-
-		//ease in ease out using pow
-		//float facSqr = factor*factor;
-		//factor = facSqr*(3.0 - 2.0*factor);
-
-		factor *= 1.0-clamp((FOG_CONTROL.x-0.24)/(fogStart-0.24),0.0,1.0);
-
-		return factor;
+		return factorX*factorY;
 	}
 	else{
 		return 0.0;

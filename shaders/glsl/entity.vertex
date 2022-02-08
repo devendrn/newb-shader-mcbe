@@ -180,7 +180,7 @@ void main()
 bool end = detectEnd();
 bool nether = detectNether();
 bool underWater = detectUnderwater();
-rainFactor = detectRain(underWater);
+rainFactor = detectRain();
 
 // horizon color
 vec3 newFog = getHorizonCol(rainFactor);

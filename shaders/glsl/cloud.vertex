@@ -43,7 +43,7 @@ void main()
 		highp float t = TIME;
 	#endif
 
-	float rain = detectRain(false);
+	float rain = detectRain();
 
 	// POSITION - blocky movement - but gives a more static uv
 	//vec2 cloudUV = POSITION.xz*20.0;

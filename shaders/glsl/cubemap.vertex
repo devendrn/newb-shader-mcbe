@@ -38,7 +38,7 @@ void main()
 
 	// detections
 	bool underWater = detectUnderwater();
-	float rainFactor = detectRain(underWater);
+	float rainFactor = detectRain();
 
 	// horizon color
 	color.rgb = getHorizonCol(rainFactor);

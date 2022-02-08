@@ -140,7 +140,7 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 	bool end = detectEnd();
 	bool nether = detectNether();
 	bool underWater = detectUnderwater();
-	float rainFactor = detectRain(underWater);
+	float rainFactor = detectRain();
 
 	// horizon color
 	vec3 newFog = getHorizonCol(rainFactor);

@@ -190,7 +190,7 @@ void main()
 
 	#ifdef FOG
 		bool underWater = detectUnderwater();
-		float rainFactor = detectRain(underWater);
+		float rainFactor = detectRain();
 	#else
 		bool underWater = false;
 		float rainFactor = 0.0;
@@ -545,7 +545,7 @@ if(isWater){
 			vec2 projectedPos = (0.7*wPos.xz*cloud_size) - parallax;
 
 			float fade = 0.1*length(projectedPos);
-			fade = wPos.y<0.0 ? (1.0 - clamp((fade*2.0)-1.0,0.0,1.0)) : 0.0;
+			fade = wPos.y<0.0 ? (clamp(2.0-(fade*2.0),0.0,1.0)) : 0.0;
 
 			projectedPos += ((1.0-fade) - bump)*parallax;
 
@@ -686,7 +686,7 @@ if(rainFactor > 0.0){
 		wetRefl.rgb += 0.9*torchLight*streaks;
 
 		// hide effect far from player
-		wetRefl.a *= 1.0-clamp( (2.0*camDist/endDist)-1.0,0.0,1.0 );
+		wetRefl.a *= clamp(2.0-(2.0*camDist/endDist),0.0,1.0);
 
 		// darken wet parts
 		color.rgb *= 1.0-0.5*wetness*rainFactor;
@@ -782,6 +782,11 @@ nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
 //color.rg = cPos.xz;
 //color.b = float(TEXTURE_DIMENSIONS.x==2048.0);
 #endif
+
+//color.rg = FOG_CONTROL;
+//color.b = 0.5;
+
+//color.rgb = vec3(rainFactor);
 
 #endif	//!BYPASS_PIXEL_SHADER
 
