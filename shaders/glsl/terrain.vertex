@@ -1,7 +1,5 @@
 // __multiversion__
 
-precision lowp float;
-
 #ifndef BYPASS_PIXEL_SHADER
 
 #if __VERSION__ >= 300
@@ -686,7 +684,7 @@ if(rainFactor > 0.0){
 		wetRefl.rgb += 0.9*torchLight*streaks;
 
 		// hide effect far from player
-		wetRefl.a *= clamp(2.0-(2.0*camDist/endDist),0.0,1.0);
+		wetRefl.a *= clamp(2.0-(2.0*camDist/endDist),0.0,0.9);
 
 		// darken wet parts
 		color.rgb *= 1.0-0.5*wetness*rainFactor;
@@ -777,16 +775,6 @@ nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
 */
 
 //if(isTree){color.rgb *= 20.0;}
-
-#ifndef ALPHA_TEST
-//color.rg = cPos.xz;
-//color.b = float(TEXTURE_DIMENSIONS.x==2048.0);
-#endif
-
-//color.rg = FOG_CONTROL;
-//color.b = 0.5;
-
-//color.rgb = vec3(rainFactor);
 
 #endif	//!BYPASS_PIXEL_SHADER
 

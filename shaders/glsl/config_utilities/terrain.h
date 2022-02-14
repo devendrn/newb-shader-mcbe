@@ -35,7 +35,7 @@
 
 // Color - Top light color
 const vec3 morning_color = vec3(1.0,0.45,0.14);
-const vec3 noon_color = vec3(1.0,0.77,0.6);
+const vec3 noon_color = vec3(1.0,0.75,0.57);
 const vec3 night_color = vec3(0.5,0.64,1.0);
 
 // Color - Torch light color

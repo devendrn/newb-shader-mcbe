@@ -94,8 +94,8 @@ vec4 inColor = color;
 
 	// glowy ores
 	#ifdef GLOW_TEX
-	if(diffuse.a>0.991 && diffuse.a<0.998 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
-		inColor.rgb = max(inColor.rgb,(vec3(GLOW_TEX*(diffuse.a<0.994 ? 0.4 : 1.0)) + 0.6*diffuse.rgb)*(1.0-uv1.y));
+	if(diffuse.a>0.9919 && diffuse.a<0.9964 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
+		inColor.rgb = max(inColor.rgb,(vec3(GLOW_TEX*(diffuse.a<0.9958 ? 0.4 : 1.0)) + 0.6*diffuse.rgb)*(1.0-uv1.y));
 		tint = vec3(0.2) + 0.8*tint;
 	}
 	#endif
