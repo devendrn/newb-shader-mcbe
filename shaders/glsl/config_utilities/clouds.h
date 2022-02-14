@@ -101,7 +101,7 @@ vec4 renderClouds(vec4 color, vec2 uv, highp float t, float rain){
 
 // simple northern night sky effect
 vec4 renderAurora(vec2 uv, highp float t, float rain){
-	float auroraCurves = sin(uv.x*0.09 + 0.07*t) + 0.3*sin(uv.x*0.5 + 0.08*t) + 0.03*sin((uv.x+uv.y)*3.0 + 0.2*t);
+	float auroraCurves = sin(uv.x*0.09 + 0.07*t) + 0.3*sin(uv.x*0.5 + 0.09*t) + 0.03*sin((uv.x+uv.y)*3.0 + 0.2*t);
 	float auroraBase = uv.y*0.4 + 2.0*auroraCurves;
 	float auroraFlow = 0.5+0.5*sin(uv.x*0.3 + 0.07*t + 0.7*sin(auroraBase*0.9) );
 

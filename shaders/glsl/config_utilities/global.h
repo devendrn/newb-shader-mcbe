@@ -3,9 +3,9 @@
 /*""""""""""""""""""""""""""""""""""""""*/
 /* TIME */
 
-// Toggle - Use real world time for wave effects
+// Toggle - Flip time after 1800 seconds
 // Disable this if you have static wave bug
-#define USE_REAL_WORLD_TIME
+#define TIME_FLIPPING
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

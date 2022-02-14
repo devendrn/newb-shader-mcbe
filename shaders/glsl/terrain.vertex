@@ -214,12 +214,10 @@ void main()
 
 
 // time
-#ifdef USE_REAL_WORLD_TIME
-	// we remap 0-3600s to 0-1800-0s and adjust speed by 0.55
-	// not ideal as it will reverse after 1800
-	highp float t = 1980.0 - 0.55*abs(TOTAL_REAL_WORLD_TIME*2.0-3600.0);
-#else
-	highp float t = TIME;
+highp float t = TOTAL_REAL_WORLD_TIME;
+#ifdef TIME_FLIPPING
+	// remap 0-3600s to 0-1800-0s
+	t = 1800.0 - abs(t-1800.0);
 #endif
 
 

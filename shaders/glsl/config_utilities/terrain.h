@@ -62,7 +62,7 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 //#define EXTRA_PLANTS_WAVE
 
 // Value - Wave animation speed (Plants,leaves)
-#define wave_speed 2.6
+#define wave_speed 2.8
 
 // Value - Rainy wind blow transparency (0-0.3)
 #define rain_blow_opacity 0.19
