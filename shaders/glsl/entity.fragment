@@ -207,7 +207,7 @@ color.rgb = colorCorrection(color.rgb);
 
 	// glBlendFuncSeparate(GL_SRC_COLOR, GL_ONE, GL_ONE, GL_ZERO)
 	color.rgb += glint.rgb*glint.rgb;
-	color.a = glint.a;
+	color.a = abs(glint.a);
 #endif
 
 //WARNING do not refactor this
