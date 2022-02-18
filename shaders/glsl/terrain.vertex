@@ -272,10 +272,10 @@ else{
 	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - rainDim));
 
 	// shadow from top light
-	float shadow = float(uv1.y > 0.876);
+	float shadow = float(uv1.y > shadow_edge);
 
 	#ifdef REMOVE_OLD_SHADOW
-		if(uv1.y < 0.876 && uv1.x>0.0){shadow = uv1.y;}
+		if(uv1.y < shadow_edge && uv1.x>0.0){shadow = uv1.y;}
 	#endif
 
 	// make shadow a bit softer and more softer when raining

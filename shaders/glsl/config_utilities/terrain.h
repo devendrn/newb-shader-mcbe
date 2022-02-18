@@ -21,6 +21,9 @@
 // Toggle - God rays (incomplete)
 //#define GOD_RAYS
 
+// Value - Change to 0.87 to fix slab bug (makes shadow smaller)
+#define shadow_edge 0.876
+
 // Value - Intensity of soft shadow (0-1)
 #define shadow_intensity 0.7
 
