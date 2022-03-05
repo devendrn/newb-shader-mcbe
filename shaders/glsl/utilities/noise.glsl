@@ -7,44 +7,33 @@ float noise1D(float x){
 	return cos(x)*cos(x*3.0)*cos(x*5.0) + 1.0;
 }
 
-// noise that works with mediump/lowp floats
-// https://stackoverflow.com/questions/13540603/glsl-es-random-grainy-noise-with-fp16-limit
-float rand(vec2 seed)
-{
-	vec2 theta_factor_a = vec2(0.9898, 0.233);
-	vec2 theta_factor_b = vec2(12.0, 78.0);
-
-	float theta_a = dot(seed.xy, theta_factor_a);
-	float theta_b = dot(seed.xy, theta_factor_b);
-	float theta_c = dot(seed.yx, theta_factor_a);
-	float theta_d = dot(seed.yx, theta_factor_b);
-
-	float value = cos(theta_a) * sin(theta_b) + sin(theta_c) * cos(theta_d);
-	float temp = mod(197.0 * value, 1.0) + value;
-	float part_a = mod(220.0 * temp, 1.0) + temp;
-	float part_b = value * 0.5453;
-	float part_c = cos(theta_a + theta_b) * 0.43758;
-
-	return fract(part_a + part_b + part_c);
+// hash function for noise (for highp only)
+highp float rand(highp vec2 n){
+	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
+
+// hash function (lowp supported)
+//float rand(vec2 n){
+//	return fract((sin(n.x+n.y)+sin((n.x-n.y)))*53.968);
+//}
 
 // interpolation of noise - used by rainy air blow
 // see https://thebookofshaders.com/11/
 float noise2D(vec2 p){
 
-	vec2 ip = floor(p);
-	vec2 u = fract(p);
+	vec2 p0 = floor(p);
+	vec2 u = p-p0;
 
-	//u *= u*(3.0-2.0*u);
-	u = 0.5-0.5*cos(u*3.14159265);
+	u *= u*(3.0-2.0*u);
+	vec2 v = 1.0 - u;
 
-	float corner1 = rand(ip);
-	float corner2 = rand(ip+vec2(1.0,0.0));
-	float corner3 = rand(ip+vec2(0.0,1.0));
-	float corner4 = rand(ip+vec2(1.0));
+	float c1 = rand(p0);
+	float c2 = rand(p0+vec2(1.0,0.0));
+	float c3 = rand(p0+vec2(0.0,1.0));
+	float c4 = rand(p0+vec2(1.0));
 
-	float res = mix(mix(corner1,corner2,u.x),mix(corner3,corner4,u.x),u.y);
+	float n = v.y*(c1*v.x+c2*u.x) + u.y*(c3*v.x+c4*u.x);
 
-	return clamp(res*res,0.0,1.0);
+	return n*n;
 }
 

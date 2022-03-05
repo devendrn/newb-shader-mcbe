@@ -7,7 +7,7 @@
 #define rain_cloud_size 0.9
 
 // Value - Normal cloud size (0-1)
-#define normal_cloud_size 0.3
+#define normal_cloud_size 0.27
 
 // Value - Cloud map size (0-100)
 #define cloud_noise_size 36.0
@@ -46,8 +46,8 @@ const vec2 cloud_size = vec2(0.7,1.0)/cloud_noise_size;
 const float start_rain = 1.0-rain_cloud_size;
 const float start_normal = 1.0-normal_cloud_size;
 
-// modified rand for cloud noise
-float rand01(vec2 seed,float start){
+// clamp rand for cloud noise
+highp float rand01(highp vec2 seed,float start){
 	float result = rand(seed);
 	result = clamp((result-start)*3.4,0.0,1.0);
 	return result*result;
@@ -65,18 +65,18 @@ float cloudNoise2D(vec2 p, highp float t, float rain){
 	p += vec2(t);
 	p.x += sin(p.y*0.4 + t);
 
-	vec2 ip = floor(p);
-	vec2 u = fract(p);
+	vec2 p0 = floor(p);
+	vec2 u = p-p0;
 
-	//u *= u*(3.0-2.0*u);
-	u = 0.5-0.5*cos(u*3.14159265);
+	u *= u*(3.0-2.0*u);
+	vec2 v = 1.0-u;
 
-	float corner1 = rand01(ip,start);
-	float corner2 = rand01(ip+vec2(1.0,0.0),start);
-	float corner3 = rand01(ip+vec2(0.0,1.0),start);
-	float corner4 = rand01(ip+vec2(1.0),start);
+	float c1 = rand01(p0,start);
+	float c2 = rand01(p0+vec2(1.0,0.0),start);
+	float c3 = rand01(p0+vec2(0.0,1.0),start);
+	float c4 = rand01(p0+vec2(1.0),start);
 
-	return mix(mix(corner1,corner2,u.x),mix(corner3,corner4,u.x),u.y);
+	return v.y*(c1*v.x+c2*u.x) + u.y*(c3*v.x+c4*u.x);
 }
 
 // simple cloud
