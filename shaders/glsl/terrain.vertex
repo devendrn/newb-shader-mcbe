@@ -242,7 +242,7 @@ highp float t = TOTAL_REAL_WORLD_TIME;
 float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
 
 #ifdef BLINKING_TORCH
-	torch_attenuation *= 1.0 - 0.1*noise1D(t*2.5);
+	torch_attenuation *= 1.0 - 0.1*noise1D(t*6.0);
 #endif
 
 vec3 torchLight = torch_color*torch_attenuation;
@@ -364,7 +364,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
 		float amplitude = PLANTS_WAVE;
-		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
+		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
 
 		#ifdef SEASONS
 			amplitude *= 0.5;
@@ -411,7 +411,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			// simple random wave for angle
 			highp vec2 theta = vec2(t + offset,t*1.4 + offset);
 			theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
-			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.15);
+			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.36);
 
 			float sinA = sin(theta.x);
 			float cosA = cos(theta.x);
@@ -436,7 +436,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
 
 		float amplitude = PLANTS_WAVE*0.4;
-		amplitude *= noise1D(t*0.15) + (rainFactor*0.4);
+		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
 
 		float wave = 1.0+sin(t*wave_speed + phaseDiff);
 		wave *= amplitude*uv1.y;
@@ -557,10 +557,6 @@ if(isWater){
 		// sky,cloud reflection mask
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
 
-		//float isFreshWater = max(1.0-2.5*abs(COLOR.g-0.5),0.0);
-		//float obstacle = 0.065+0.065*sin(viewDir.x*8.0)*sin(viewDir.z*8.0);
-		//waterRefl *= vec3(0.4+0.6*smoothstep(obstacle,0.1+obstacle,max(viewDir.y,0.0)));
-
 		// ambient,torch light reflection
 		waterRefl += vec3(0.02-(0.02*uv1.y)) + torch_color*torch_intensity*((uv1.x>0.83 ? 0.6 : 0.0) + lit.x*bump*10.0);
 
@@ -651,7 +647,7 @@ if(rainFactor > 0.0){
 	mistColor.a *= 1.0-rainFactor*fogGradient;
 
 	// humid air blow
-	float humidAir = clamp(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0,1.0);
+	float humidAir = noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) );
 	humidAir *= rainFactor*lit.y*lit.y;
 	mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
 	mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
@@ -727,7 +723,7 @@ if(rainFactor > 0.0){
 #endif
 
 
-#ifdef GOD_RAYS
+#ifndef GOD_RAYS
 
 // needs more optimization
 // offset wPos (only works upto 16 blocks)
@@ -758,21 +754,6 @@ mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 
 #endif
 
-
-/*
-// less precise normal
-vec3 nrmlow;
-nrmlow.y = -float(shade>0.9);
-nrmlow.z = float(shade>0.75 && shade<0.9);
-nrmlow.x = float(shade>0.4 && shade<0.75);
-nrmlow *= sign(wPos);
-
-#ifdef ALPHA_TEST
-nrmlow *= float((bPos.y+bPos.x)==0.0 && isColored);
-#endif
-*/
-
-//if(isTree){color.rgb *= 20.0;}
 
 #endif	//!BYPASS_PIXEL_SHADER
 

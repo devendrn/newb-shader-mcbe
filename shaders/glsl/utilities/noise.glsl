@@ -2,9 +2,12 @@
 
 // noise functions
 
-// simple 1D noise - used in plants wave
+// 1D noise - used in plants,lantern wave
 float noise1D(float x){
-	return cos(x)*cos(x*3.0)*cos(x*5.0) + 1.0;
+	float x0 = floor(x);
+	float t0 = x-x0;
+	t0 *= t0*(3.0-2.0*t0);
+	return mix(fract(sin(x0)*84.85),fract(sin(x0+1.0)*84.85),t0);
 }
 
 // hash function for noise (for highp only)

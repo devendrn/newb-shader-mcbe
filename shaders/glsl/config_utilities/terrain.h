@@ -52,11 +52,11 @@ const vec3 torch_color = vec3(1.0,0.52,0.18);
 
 // Toggle - Plants Wave (leaves/plants)
 // Value - Wave animation intensity (Plants)
-#define PLANTS_WAVE 0.02
+#define PLANTS_WAVE 0.04
 
 // Toggle - Lantern swing
-// Value - Lantern swing intensity (0-0.3)
-#define LANTERN_WAVE 0.08
+// Value - Lantern swing intensity (0-0.6)
+#define LANTERN_WAVE 0.16
 
 // Toggle - Non-transparent leaves wave (might cause white lines at edges)
 //#define ALL_LEAVES_WAVE
