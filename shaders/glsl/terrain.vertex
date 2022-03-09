@@ -328,7 +328,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	bool isVines = bPos.y==0.0 && (bPos.x==0.046875 || is(bPos.z,0.0468,0.06) || bPos.x==0.953125 || bPos.z==0.953125);
 	bool isFarmPlant = (bPos.y==0.9375) && any( equal(bPos.xzxz,vec4(0.25,0.25,0.75,0.75)) ); 
 	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
-	bool isGrassTop = tex0.a<0.01 && tex0lum>2.99;
+	bool isGrassTop = (tex0.a<0.01 && tex0lum>2.99 && bPos.y==0.0);
 
 	// darken plants bottom - better to not move it elsewhere
 	light *= isFarmPlant && !isTop ? 0.65 : 1.0;
@@ -358,7 +358,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	#endif
 
-	if(shouldWave && distanceThreshold<42.0){
+	if(shouldWave && distanceThreshold<40.0){
 
 		// values must be a multiple of pi/4
 		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
@@ -374,7 +374,7 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 			amplitude *= isVines ? 0.1 + 0.4*cos(cPos.y*3.14159) : 1.0;
 
 			// wave the bottom of plants in opposite direction to make it look fixed
-			if(isPlants && isColored && !(isGrassTop || isVines || isTreeLeaves)){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
+			if(isPlants && isColored && !(isGrassTop || isVines || isTreeLeaves || isTop)){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
 
 		#endif
 
@@ -723,7 +723,7 @@ if(rainFactor > 0.0){
 #endif
 
 
-#ifndef GOD_RAYS
+#ifdef GOD_RAYS
 
 // needs more optimization
 // offset wPos (only works upto 16 blocks)

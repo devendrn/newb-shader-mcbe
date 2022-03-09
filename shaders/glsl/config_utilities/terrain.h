@@ -1,18 +1,6 @@
 // Newb Shader
 
 /*""""""""""""""""""""""""""""""""""""""*/
-/* VOXEL SHADOW SCRIPT SUPPORT */
-
-// For removing old mcpe shadows
-// This method of removal has issues with nearby torch lights
-
-// Toggle - Remove old shadow in all cases
-//#define REMOVE_OLD_SHADOW
-
-/*""""""""""""""""""""""""""""""""""""""*/
-
-
-/*""""""""""""""""""""""""""""""""""""""*/
 /* TERRAIN LIGHTING */
 
 // Toggle - Flickering torch light
@@ -121,4 +109,15 @@ const vec3 underwater_color = vec3(0.2,0.6,1.0);
 
 /*""""""""""""""""""""""""""""""""""""""*/
 
+
+/*""""""""""""""""""""""""""""""""""""""*/
+/* VOXEL SHADOW SCRIPT SUPPORT */
+
+// For removing old mcpe shadows
+// This method of removal has issues with nearby torch lights
+
+// Toggle - Remove old shadow in all cases
+//#define REMOVE_OLD_SHADOW
+
+/*""""""""""""""""""""""""""""""""""""""*/
 
