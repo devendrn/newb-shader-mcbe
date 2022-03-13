@@ -242,7 +242,7 @@ highp float t = TOTAL_REAL_WORLD_TIME;
 float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
 
 #ifdef BLINKING_TORCH
-	torch_attenuation *= 1.0 - 0.1*noise1D(t*6.0);
+	torch_attenuation *= 1.0 - 0.19*noise1D(t*6.0);
 #endif
 
 vec3 torchLight = torch_color*torch_attenuation;

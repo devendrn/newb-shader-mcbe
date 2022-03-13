@@ -3,7 +3,7 @@
 // noise functions
 
 // 1D noise - used in plants,lantern wave
-float noise1D(float x){
+highp float noise1D(highp float x){
 	float x0 = floor(x);
 	float t0 = x-x0;
 	t0 *= t0*(3.0-2.0*t0);
