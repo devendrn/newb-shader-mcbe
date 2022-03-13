@@ -202,6 +202,9 @@ light = lighting(entitySpacePosition, entitySpaceNormal);
 // soft shadow
 light *= 1.05-0.3*float(POSITION.y>0.0);
 
+
+#ifndef UI_ENTITY
+	
 // nether,end,underwater tint
 if(nether){
 	light *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
@@ -215,7 +218,7 @@ if(underWater){
 
 	highp float t = TIME;
 	float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
-	light += vec3(1.5,3.0,3.3)*caustic;
+	light += (vec3(1.0)+1.5*underwaterBaseCol)*caustic;
 }
 
 
@@ -239,5 +242,7 @@ if(rainFactor>0.0 && pos.z<30.0){
 		wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
 	}
 }
+
+#endif
 
 }
