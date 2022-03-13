@@ -221,6 +221,7 @@ if(underWater){
 	light += (vec3(1.0)+1.5*underwaterBaseCol)*caustic;
 }
 
+#endif
 
 // wet effect
 wetRefl.a = 0.0;
@@ -242,7 +243,5 @@ if(rainFactor>0.0 && pos.z<30.0){
 		wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
 	}
 }
-
-#endif
 
 }
