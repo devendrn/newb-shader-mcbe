@@ -24,13 +24,17 @@
 // Value - Torch brightness
 #define torch_intensity 1.0
 
-// Color - Top light color
+// Color - Top light color (Sunlight color)
 const vec3 morning_color = vec3(1.0,0.45,0.14);
 const vec3 noon_color = vec3(1.0,0.75,0.57);
 const vec3 night_color = vec3(0.5,0.64,1.0);
 
 // Color - Torch light color
-const vec3 torch_color = vec3(1.0,0.52,0.18);
+const vec3 overworld_torch = vec3(1.0,0.52,0.18);
+const vec3 underwater_torch = vec3(1.0,0.52,0.18);
+const vec3 nether_torch = vec3(1.0,0.52,0.18);
+const vec3 end_torch = vec3(1.0,0.52,0.18);
+
 
 /*""""""""""""""""""""""""""""""""""""""*/
 

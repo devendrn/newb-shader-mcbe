@@ -238,6 +238,10 @@ highp float t = TOTAL_REAL_WORLD_TIME;
 
 // Lighting
 // all of these will be multiplied by tex uv1 in frag so functions should be divided by uv1 here
+vec3 torchColor = end ? end_torch : (nether ? nether_torch : overworld_torch);
+#ifdef UNDERWATER
+	torchColor = underwater_torch;
+#endif
 
 float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
 
@@ -245,7 +249,7 @@ float torch_attenuation = (torch_intensity*uv1.x)/(0.5-0.45*lit.x);
 	torch_attenuation *= 1.0 - 0.19*noise1D(t*8.0);
 #endif
 
-vec3 torchLight = torch_color*torch_attenuation;
+vec3 torchLight = torchColor*torch_attenuation;
 
 vec3 light;
 if(nether || end){
@@ -255,7 +259,7 @@ if(nether || end){
 	light = end ? vec3(1.98,1.25,2.3) : vec3(1.98,1.44,1.26);
 
 	// torch light
-	light += torchLight*1.1;
+	light += torchLight;
 }
 else{
 	// overworld lighting
@@ -498,7 +502,7 @@ float relativeDist = camDist / RENDER_DISTANCE;
 mistColor = renderMist(horizonEdgeCol, relativeDist, lit.x, rainFactor, nether,underWater,end);
 
 mistColor.rgb *= max(0.75,uv1.y);
-mistColor.rgb += torch_color*torch_intensity*lit.x*0.3;
+mistColor.rgb += torchColor*torch_intensity*lit.x*0.3;
 
 
 #if defined(FOG) || defined(BLEND)
@@ -558,7 +562,7 @@ if(isWater){
 		if(uv1.y < 0.93 && !end){waterRefl *= 0.7*uv1.y;}
 
 		// ambient,torch light reflection
-		waterRefl += vec3(0.02-(0.02*uv1.y)) + torch_color*torch_intensity*((uv1.x>0.83 ? 0.6 : 0.0) + lit.x*bump*10.0);
+		waterRefl += vec3(0.02-(0.02*uv1.y)) + torchColor*torch_intensity*((uv1.x>0.83 ? 0.6 : 0.0) + lit.x*bump*10.0);
 
 		// flat plane
 		if( is(fractCposY,0.8,0.9) ){ waterRefl *= 1.0 - 0.66*clamp(wPos.y,0.0,1.0); }
@@ -624,7 +628,7 @@ if(isWater){
 		light += caustics*underWaterColor*(0.1+lit.y+(lit.x*0.7))*caustic_intensity;
 
 		// use mist to decrease visibility
-		mistColor.rgb = (1.0+lit.y*0.6)*mix(mistColor.rgb,torch_color*torch_intensity*underwater_color,lit.x);
+		mistColor.rgb = (1.0+lit.y*0.6)*mix(mistColor.rgb,torchColor*torch_intensity*underwater_color,lit.x);
 		mistColor.a += (1.0-mistColor.a)*dot(lit,vec2(0.2));
 	}
 
