@@ -753,6 +753,7 @@ vol += sin(5.0*u + 0.4*diff)*sin(4.0*u + 0.7*diff);
 vol *= vol*mask*uv1.y;
 vol *= min(7.0*relativeDist*(1.0-mask),1.0);
 vol *= clamp(3.0*(FOG_COLOR.r-FOG_COLOR.b),0.0,1.0);
+vol = clamp(vol,0.0,1.0);
 
 mistColor.a = mistColor.a + 0.3*vol*(1.0-mistColor.a);
 

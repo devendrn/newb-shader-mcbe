@@ -37,6 +37,6 @@ float noise2D(vec2 p){
 
 	float n = v.y*(c1*v.x+c2*u.x) + u.y*(c3*v.x+c4*u.x);
 
-	return n*n;
+	return min(n*n,1.0);
 }
 
