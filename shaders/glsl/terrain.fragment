@@ -64,8 +64,8 @@ void main()
 	vec4 diffuse = texture2D(TEXTURE_0, uv0);
 #endif
 
-// we need textures in linear-space colors
-diffuse.rgb *= diffuse.rgb;
+	// we need textures in linear-space colors
+	diffuse.rgb *= diffuse.rgb;
 
 #ifdef SEASONS_FAR
 	diffuse.a = 1.0;
@@ -79,8 +79,8 @@ diffuse.rgb *= diffuse.rgb;
 		if(diffuse.a < 0.5){ discard; }
 	#endif
 #endif
-	
-vec4 inColor = color;
+
+	vec4 inColor = color;
 
 // transparency
 #if defined(BLEND)
@@ -120,7 +120,7 @@ vec4 inColor = color;
 	diffuse.a = 1.0;
 #endif
 
-/// apply color and lighting
+
 #ifdef MAYBE_WATER
 	// edit water texture and apply transparency
 	if(water>0.5){
@@ -129,35 +129,24 @@ vec4 inColor = color;
 	}
 #endif
 
+	// apply color and lighting
 	diffuse.rgb *= inColor.rgb;
 
-// light glow
-float glow = uv1.x*uv1.x;
-glow *= glow*glow*glow*glow;
-diffuse.rgb *= 1.0 + glow*0.3;
-
 #ifdef FOG
-	// wet effect
 	if(wetRefl.a > 0.0){
-		// only on xz plane
+		// wet effect - only on xz plane
 		if(wPosY < 0.0 ? (dFdy(wPosY) < 0.0001) : false){
-			float mask = wetRefl.a*max((clamp(shade,0.78,0.88)-0.78)/0.1,0.4);
+			float mask = wetRefl.a*(clamp(shade*10.0,8.2,8.8)-7.8);
 			diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
 		}
 	}
 #endif
 
-// mist,fog
-diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
+	// mist,fog
+	diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
 
-// color correction
-diffuse.rgb = colorCorrection(diffuse.rgb);
-
-#ifndef ALPHA_TEST
-//diffuse = texture2D(TEXTURE_0, color.rg*0.125);
-#endif
-
-//diffuse.rgb = color.rgb;
+	// color correction
+	diffuse.rgb = colorCorrection(diffuse.rgb);
 
 	gl_FragColor = diffuse;
 

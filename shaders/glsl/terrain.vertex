@@ -86,14 +86,9 @@ float fastRand(vec2 n){
 
 
 // water displacement map (also used by caustic)
-float disp(vec3 pos, highp float t, bool chunkBorder){
-	if(chunkBorder){
-		return 0.5 + sin(t + (pos.x+pos.z)*rd )*0.5;
-	}
-	else{
-		float val = 0.5 + 0.5*sin(t*1.7+((pos.x+pos.y)*rd));
-		return mix(fastRand(pos.xz),fastRand(pos.xz+vec2(1.0)),val);
-	}
+float disp(vec3 pos, highp float t){
+	float val = 0.5 + 0.5*sin(t*1.7+((pos.x+pos.y)*rd));
+	return mix(fastRand(pos.xz),fastRand(pos.xz+vec2(1.0)),val);
 }
 
 
@@ -157,7 +152,7 @@ void main()
 	vec3 wPos = worldPos.xyz;
 	vec3 cPos = POSITION.xyz;
 	vec3 bPos = fract(cPos);
-
+	vec3 tiledCpos = cPos*vec3(cPos.x<15.99,cPos.y<15.99,cPos.z<15.99);
 
 #ifndef BYPASS_PIXEL_SHADER
 
@@ -169,8 +164,6 @@ void main()
 
 	bool isColored = (color.g > min(color.r,color.b)) || !(color.r==color.g && color.r==color.b);
 	//bool isColored = dot(abs(color.gb-color.rr),vec2(1.0))>0.0;
-
-	bool chunkBorder = (fract(cPos.x*0.0625)*fract(cPos.z*0.0625) == 0.0);
 
 	shade = isColored ? color.g*1.5 : color.g;
 
@@ -306,7 +299,9 @@ light *= COLOR.g > 0.35 ? 1.0 : 0.8;
 if(isTree){light *= 1.25;}
 
 
-lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
+// distance from the camera (used by mist, fog, water)
+float camDist = length(wPos);
+
 
 #ifdef ALPHA_TEST
 
@@ -362,10 +357,10 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	#endif
 
-	if(shouldWave && distanceThreshold<40.0){
+	if(shouldWave && camDist<20.0){
 
 		// values must be a multiple of pi/4
-		float phaseDiff = dot(cPos.xyz,vec3(0.7854)) + disp(cPos.xyz,t,chunkBorder);
+		float phaseDiff = dot(cPos,vec3(0.7854)) + disp(tiledCpos,t);
 
 		float amplitude = PLANTS_WAVE;
 		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
@@ -435,9 +430,9 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 	// for non-fancy and jungle leaves
 	#if defined(PLANTS_WAVE) && defined(ALL_LEAVES_WAVE)
-	if(color.a==0.0 && distanceThreshold<45.0){
+	if(color.a==0.0 && camDist<20.0){
 		/// values must be a multiple of pi/4
-		float phaseDiff = dot(cPos.xyz,vec3(0.7854,0.7854,0.7854)) + disp(cPos.xyz,t,chunkBorder);
+		float phaseDiff = dot(cPos,vec3(0.7854,0.7854,0.7854)) + disp(tiledCpos,t);
 
 		float amplitude = PLANTS_WAVE*0.4;
 		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
@@ -451,9 +446,9 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 	#endif
 
 	#if defined(MAYBE_WATER) && defined(WATER_WAVE)
-		if(isWater && distanceThreshold < 35.0){
+		if(isWater && camDist < 16.0){
 			worldPos.y += 0.002;
-			worldPos.xy += WATER_WAVE*vec2(1.0,min(15.0*fract(cPos.y),1.5))*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
+			worldPos.xy += WATER_WAVE*vec2(1.0,min(15.0*fract(cPos.y),1.5))*sin( t*2.0 + dot(cPos,vec3(rd)));
 		}
 	#endif
 
@@ -474,10 +469,6 @@ lowp float distanceThreshold = abs(wPos.x)+abs(wPos.y)+abs(wPos.z);
 
 
 #ifndef BYPASS_PIXEL_SHADER
-
-
-// distance from the camera (used by mist, fog, water)
-float camDist = length(wPos.xyz);
 
 
 float relativeDist = camDist / RENDER_DISTANCE;
@@ -507,7 +498,7 @@ mistColor.rgb += torchColor*torch_intensity*lit.x*0.3;
 
 #if defined(FOG) || defined(BLEND)
 
-vec3 viewDir = -wPos.xyz/camDist;
+vec3 viewDir = -wPos/camDist;
 
 #ifdef MAYBE_WATER
 if(isWater){  
@@ -529,8 +520,8 @@ if(isWater){
 	if( fractCposY > 0.0 ){
 
 		// calculate cosine of incidence angle and apply water bump
-		float bump = water_bump*disp(cPos.xyz,t,chunkBorder);
-		bump += 0.12*water_bump*sin( t*2.0 + dot(cPos.xyz,vec3(rd)));
+		float bump = disp(tiledCpos,t) + 0.12*sin(t*2.0 + dot(cPos,vec3(rd)));
+		bump *= water_bump;
 		cosR = abs(viewDir.y);
 		cosR = mix(cosR,(1.0-cosR*cosR),bump);
 
@@ -552,7 +543,7 @@ if(isWater){
 			float renderedClouds = cloudNoise2D(projectedPos,t,rainFactor);
 
 			vec3 cloudColor = waterRefl.ggg+mix(vec3(1.0,0.5,0.2),vec3(1.0),FOG_COLOR.g*1.1)*FOG_COLOR.g;
-			cloudColor = mix(cloudColor,vec3(2.1)*FOG_COLOR.g,rainFactor);
+			cloudColor = mix(cloudColor,vec3(2.1*FOG_COLOR.g),rainFactor);
 
 			waterRefl = mix(waterRefl,cloudColor,renderedClouds*fade*0.9);
 
@@ -574,7 +565,7 @@ if(isWater){
 	// reflection for side plane
 	else{
 		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
-		cosR += (1.0-cosR*cosR)*water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos.xyz,vec3(rd)) ));
+		cosR += (1.0-cosR*cosR)*water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos,vec3(rd)) ));
 
 		waterRefl = zenithCol*(lit.y*1.3);
 	}
@@ -619,7 +610,7 @@ if(isWater){
 
 		light = underWaterColor*(light*0.7 + vec3(underwater_brightness));
 
-		float caustics = disp(cPos.xyz*vec3(1.0,0.1,1.0), t, chunkBorder);
+		float caustics = disp(tiledCpos*vec3(1.0,0.1,1.0), t);
 		caustics += 0.25+0.25*sin(t + (cPos.x + cPos.z)*rd);
 
 		//if(is(uv1.y,0.81,0.82) || is(uv1.y,0.68,0.69) || is(uv1.y,0.56,0.57) || is(uv1.y,0.43,0.44) || is(uv1.y,0.31,0.32)){light.rgb=vec3(1.0,0.0,0.0);}
@@ -627,7 +618,7 @@ if(isWater){
 
 		light += caustics*underWaterColor*(0.1+lit.y+(lit.x*0.7))*caustic_intensity;
 
-		// use mist to decrease visibility
+		// use mist to make water foggy around lights
 		mistColor.rgb = (1.0+lit.y*0.6)*mix(mistColor.rgb,torchColor*torch_intensity*underwater_color,lit.x);
 		mistColor.a += (1.0-mistColor.a)*dot(lit,vec2(0.2));
 	}
@@ -639,21 +630,15 @@ if(isWater){
 wPosY = wPos.y;
 
 
-// to remove fog in heights (also rain mist)
-float fogGradient = 1.0-max(-viewDir.y+0.1,0.0);
-fogGradient = 1.0-fogGradient*fogGradient*fogGradient;
-
-
 // rain effects
 wetRefl.a = 0.0;
 if(rainFactor > 0.0){
 
-	mistColor.a *= 1.0-rainFactor*fogGradient;
+	float lit2 = lit.y*lit.y;
 
 	// humid air blow
 	float humidAir = noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) );
-	humidAir *= rainFactor*lit.y*lit.y;
-	mistColor.rgb = mix(mistColor.rgb,vec3(max(mistColor.g,0.3)),max(0.0,humidAir-0.3));
+	humidAir *= rainFactor*lit2;
 	mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
 
 	// wet effect
@@ -662,10 +647,7 @@ if(rainFactor > 0.0){
 	if(!isWater && camDist < endDist){
 
 		// puddles map
-		float wetness;
-		if(chunkBorder){ wetness = max(0.5+0.5*sin((cPos.x+cPos.z)*rd),0.6);}
-		else{ wetness = min(0.4+0.6*fastRand(cPos.xz*1.4),1.0);}
-		wetness *= lit.y*lit.y;
+		float wetness = lit2*min(0.4+0.6*fastRand(tiledCpos.xz*1.4),1.0);
 
 		// cosine of incidence angle
 		float cosR = max(viewDir.y,float(wPos.y > 0.0));
@@ -688,7 +670,7 @@ if(rainFactor > 0.0){
 		color.rgb *= 1.0-0.5*wetness*rainFactor;
 	}
 	else{
-		color.rgb *= 1.0-0.4*lit.y*lit.y*rainFactor;
+		color.rgb *= 1.0-0.4*lit2*rainFactor;
 	}
 
 }
@@ -703,18 +685,22 @@ if(rainFactor > 0.0){
 
 	vec4 fogColor = renderFog(horizonEdgeCol, relativeDist, nether);
 
+	#ifndef UNDERWATER
 	if(nether){
 		fogColor.rgb = mix(fogColor.rgb,vec3(0.8,0.2,0.12)*1.5,lit.x*(1.67-fogColor.a*1.67));
 	}
 	else{
 		if(end){fogColor.rgb = vec3(0.16,0.06,0.2);}
-		if(!underWater){fogColor.a *= 1.0-fogGradient;}
+
+		// to remove fog in heights
+		float fogGradient = 1.0-max(-viewDir.y+0.1,0.0);
+		fogGradient *= fogGradient*fogGradient;
+		fogColor.a *= fogGradient;
 	}
+	#endif
 
-	// mix fog with mist (need to do this in a proper and efficient way)
-	mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
-	mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
-
+	// mix fog with mist
+	mistColor = mix(mistColor,vec4(fogColor.rgb,1.0),fogColor.a);
 
 #endif // FOG
 
@@ -729,23 +715,17 @@ if(rainFactor > 0.0){
 
 #ifdef GOD_RAYS
 
-// needs more optimization
 // offset wPos (only works upto 16 blocks)
-
-vec3 offset = cPos.xyz-(16.0*fract(wPos.xyz*0.0625));
-vec3 d1 = max(offset,0.0);
-vec3 d2 = max(-offset,0.0);
-offset = max((16.0-d2)*sign(d2),d1);
-
-offset = abs(offset-8.0)*0.125;
+vec3 offset = cPos - 16.0*fract(wPos*0.0625);
+offset = abs(2.0*fract(offset*0.0625)-1.0);
 offset = offset*offset*(3.0-2.0*offset);
+//offset = 0.5 + 0.5*cos(offset*0.392699082);
 
-vec3 ofPos = (wPos.xyz+offset);
+//vec3 ofPos = wPos+offset;
 vec3 nrmof = normalize(wPos);
 
 float u = nrmof.z/length(nrmof.zy);
-
-float diff = 0.1*offset.x + 0.2*offset.y + offset.z + 0.07*t;
+float diff = dot(offset,vec3(0.1,0.2,1.0)) + 0.07*t;
 float mask = nrmof.x*nrmof.x;
 
 float vol = sin(7.0*u + 1.5*diff)*sin(3.0*u + diff);
