@@ -82,11 +82,6 @@ void main()
 
 	vec4 inColor = color;
 
-// transparency
-#if defined(BLEND)
-	diffuse.a *= inColor.a;
-#endif
-
 // day night tint
 #ifndef ALWAYS_LIT
 	vec3 tint = texture2D( TEXTURE_1, uv1).rgb;
@@ -95,17 +90,24 @@ void main()
 	// glowy ores
 	#ifdef GLOW_TEX
 		#ifdef ALPHA_TEST
-	if(diffuse.a>0.9919 && diffuse.a<0.9964 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
+	if(diffuse.a>0.988 && diffuse.a<0.9925 && abs(diffuse.r-diffuse.b)+abs(diffuse.b-diffuse.g)>0.02){
 		#else
-	if(diffuse.a>0.9919 && diffuse.a<0.9964){
+	if(diffuse.a>0.988 && diffuse.a<0.9925){
 		#endif
-		inColor.rgb = max(inColor.rgb,(vec3(GLOW_TEX*(diffuse.a<0.9958 ? 0.4 : 1.0)) + 0.6*diffuse.rgb)*(1.0-uv1.y));
+		inColor.rgb = max(inColor.rgb,(vec3(GLOW_TEX*(diffuse.a>0.989 ? 0.4 : 1.0)) + 0.6*diffuse.rgb)*(1.0-uv1.y));
 		tint = vec3(0.2) + 0.8*tint;
 	}
 	#endif
 
 	diffuse.rgb *= tint;
 #endif
+
+
+// transparency
+#if defined(BLEND)
+	diffuse.a *= inColor.a;
+#endif
+
 
 #ifndef SEASONS
 	#if !USE_ALPHA_TEST && !defined(BLEND)
