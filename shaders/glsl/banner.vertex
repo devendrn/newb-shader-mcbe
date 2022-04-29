@@ -170,9 +170,8 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 
 	if(rainFactor > 0.0){ light.rgb *= 1.0-rainFactor*0.3; }
 
-	// mix fog with mist (need to do this in a proper and efficient way)
-	mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
-	mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
+	// mix fog with mist
+	mistColor = mix(mistColor,vec4(fogColor.rgb,1.0),fogColor.a);
 
 #endif //ENABLE_FOG
 

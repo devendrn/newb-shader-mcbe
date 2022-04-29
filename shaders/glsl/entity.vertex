@@ -192,9 +192,8 @@ float camDist = pos.z/RENDER_DISTANCE;
 mistColor = renderMist(newFog, camDist, TILE_LIGHT_COLOR.x, rainFactor, nether,underWater,end);
 vec4 fogColor = renderFog(newFog, camDist, nether);
 
-// mix fog with mist (need to do this in a proper and efficient way)
-mistColor.a = min(mistColor.a + fogColor.a*(1.0-mistColor.a),1.0);
-mistColor.rgb = mix(mistColor.rgb,fogColor.rgb,fogColor.a);
+// mix fog with mist
+mistColor = mix(mistColor,vec4(fogColor.rgb,1.0),fogColor.a);
 
 // lighting
 light = lighting(entitySpacePosition, entitySpaceNormal);
@@ -225,7 +224,7 @@ if(underWater){
 
 // wet effect
 wetRefl.a = 0.0;
-if(rainFactor>0.0 && pos.z<30.0){
+if(rainFactor>0.0 && pos.z<24.0){
 	highp vec3 wPos = matmulxyz(WORLD,entitySpacePosition);
 	highp vec3 dir = matmulxyz(WORLD,entitySpaceNormal);
 

@@ -48,7 +48,7 @@ void main()
 
 	color = vec4(CURRENT_COLOR.rgb,1.0);
 	color = renderClouds(color, worldPos.xz*cloud_size, t, rain);
-	color.rgb = mix(color.rgb,color.ggg*FOG_COLOR.g*3.5,rain*0.8);
+	color.rgb = mix(color.rgb,vec3(color.g*FOG_COLOR.g*3.5),rain*0.8);
 
 	// cloud depth
 	gl_Position.y += color.a*cloud_depth*(10.0-7.0*rain);
@@ -65,7 +65,6 @@ void main()
 
 	// fade out cloud layer
 	float depth = length(worldPos.xyz)*0.002;
-	float fade = 1.0 - clamp((depth-0.5)*2.0,0.0,1.0);
-	color.a *= fade;
+	color.a *= clamp(2.0-2.0*depth,0.0,1.0);
 
 }

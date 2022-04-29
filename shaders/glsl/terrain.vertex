@@ -132,6 +132,7 @@ float calculateFresnel(float cosR, float r0){
 	a5 *= a5*a;
 
 	return r0 + (1.0-r0)*a5;
+	//return r0 + (1.0-r0)*exp(-6.0*cosR);
 }
 
 
@@ -268,7 +269,7 @@ else{
 	// sky ambient
 	light += mix(horizonCol,zenithCol,0.5+uv1.y-0.5*lit.y)*(lit.y*(3.0-2.0*uv1.y)*(1.3 + (4.0*nightFactor) - rainDim));
 
-	// shadow from top light
+	// shadow cast by top light
 	float shadow = float(uv1.y > shadow_edge);
 
 	#ifdef REMOVE_OLD_SHADOW
@@ -567,7 +568,7 @@ if(isWater){
 		cosR = max(sqrt(dot(viewDir.xz,viewDir.xz)),float(wPos.y<0.5));
 		cosR += (1.0-cosR*cosR)*water_bump*(0.5 + 0.5*sin(1.5*t + dot(cPos,vec3(rd)) ));
 
-		waterRefl = zenithCol*(lit.y*1.3);
+		waterRefl = zenithCol*lit.y*1.3;
 	}
 
 	float fresnel = calculateFresnel(cosR,0.03);
@@ -637,7 +638,7 @@ if(rainFactor > 0.0){
 	float lit2 = lit.y*lit.y;
 
 	// humid air blow
-	float humidAir = noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) );
+	float humidAir = max(noise2D( (pos.xy*vec2(1.5,1.0)/(1.0+pos.z)) + (t*vec2(1.4,0.7)) ),0.0);
 	humidAir *= rainFactor*lit2;
 	mistColor.a = min(mistColor.a + humidAir*rain_blow_opacity,1.0);
 

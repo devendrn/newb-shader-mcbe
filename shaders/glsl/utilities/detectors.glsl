@@ -39,19 +39,12 @@ float detectRain(){
 	vec2 start = vec2(0.5 + (1.09/((RENDER_DISTANCE*0.0625)-0.8)),0.99);
 	const vec2 end = vec2(0.2305,0.7005);
 
-	if(FOG_CONTROL.y < start.y && FOG_CONTROL.x < start.x && FOG_CONTROL.x > 0.1){
+	vec2 factor = clamp((start-FOG_CONTROL)/(start-end),vec2(0.0),vec2(1.0));
 
-		float factorX = clamp((start.x-FOG_CONTROL.x)/(start.x-end.x),0.0,1.0);
-		float factorY = clamp((start.y-FOG_CONTROL.y)/(start.y-end.y),0.0,1.0);
+	// ease in ease out for Y
+	factor.y = factor.y*factor.y*(3.0 - 2.0*factor.y);
 
-		// ease in ease out
-		factorY = factorY*factorY*(3.0 - 2.0*factorY);
-
-		return factorX*factorY;
-	}
-	else{
-		return 0.0;
-	}
+	return factor.x*factor.y;
 }
 
 

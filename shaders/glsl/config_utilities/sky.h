@@ -93,17 +93,16 @@ vec3 getHorizonEdgeCol(vec3 horizonCol, float rainFactor){
 vec3 sunLightTint(vec3 night_color,vec3 morning_color,vec3 day_color,float dayFactor,float rain){
 
 	float tintFactor = FOG_COLOR.g + 0.1*FOG_COLOR.r;
-	float morning = clamp((tintFactor-0.37)/0.45,0.0,1.0);
-	float night = clamp((tintFactor-0.05)*3.125,0.0,1.0);
+	float noon = clamp((tintFactor-0.37)/0.45,0.0,1.0);
+	float morning = clamp((tintFactor-0.05)*3.125,0.0,1.0);
 
-	// morning tint during rain fix
-	morning = min(morning + rain*4.5,1.0);
-	night = night*(1.0-rain);
+	float r = 1.0-rain;
+	r *= r;
 
-	return mix(
-		mix(night_color,morning_color,night),
-		mix(mix(morning_color.rgb,morning_color.bgr,min(rain*5.0,1.0)),day_color,morning),
-		dayFactor);
+	return mix(vec3(0.65,0.65,0.75),mix(
+		mix(night_color,morning_color,morning),
+		mix(morning_color,day_color,noon),
+		dayFactor),r*r);
 }
 
 // Colors end
