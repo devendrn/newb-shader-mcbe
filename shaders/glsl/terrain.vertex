@@ -314,6 +314,11 @@ float camDist = length(wPos);
 	int texNoX = int(texMap.x);
 	int texNoY = int(texMap.y);
 
+	// x and z distance from block center
+	vec2 bPosC = abs(bPos.xz-0.5);
+
+	float windStrength = lit.y*(noise1D(t*0.36) + (rainFactor*0.4));
+
 	#ifdef PLANTS_WAVE
 
 	#ifdef SEASONS
@@ -325,9 +330,9 @@ float camDist = length(wPos);
 	bool isTop = texPosY<0.5;
 	bool isTreeLeaves = (COLOR.a==0.0 || tex0.a>0.99) && max(COLOR.g,COLOR.r)>0.37 && bPos.x+bPos.y+bPos.z<0.01;
 	bool isPlants = (COLOR.r/COLOR.g<1.9);
-	bool isVines = bPos.y==0.0 && (bPos.x==0.046875 || is(bPos.z,0.0468,0.06) || bPos.x==0.953125 || bPos.z==0.953125);
-	bool isFarmPlant = (bPos.y==0.9375) && any( equal(bPos.xzxz,vec4(0.25,0.25,0.75,0.75)) ); 
-	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop);
+	bool isVines = (bPos.y + bPos.x*bPos.z)<0.00005 && is(bPosC.x+bPosC.y,0.94921,0.94922);
+	bool isFarmPlant = (bPos.y==0.9375) && (bPosC.x==0.25 ||  bPosC.y==0.25); 
+	bool shouldWave = ((isTreeLeaves || isPlants || isVines) && isColored) || (isFarmPlant && isTop && !underWater);
 	bool isGrassTop = (tex0.a<0.01 && tex0lum>2.99 && bPos.y==0.0);
 
 	// darken plants bottom - better to not move it elsewhere
@@ -361,28 +366,25 @@ float camDist = length(wPos);
 	if(shouldWave && camDist<20.0){
 
 		// values must be a multiple of pi/4
-		float phaseDiff = dot(cPos,vec3(0.7854)) + disp(tiledCpos,t);
+		float phaseDiff = dot(cPos,vec3(0.7854)) + fastRand(tiledCpos.xz + tiledCpos.y);
 
-		float amplitude = PLANTS_WAVE;
-		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
+		float amplitude = PLANTS_WAVE*windStrength;
 
 		#ifdef SEASONS
 			amplitude *= 0.5;
 		#else
-
 			amplitude *= isTreeLeaves ? 0.5 : 1.0;
-			amplitude *= isVines ? 0.1 + 0.4*cos(cPos.y*3.14159) : 1.0;
+			amplitude = isVines ? min(0.024,amplitude*fract(0.01+tiledCpos.y*0.5)) : amplitude;
 
 			// wave the bottom of plants in opposite direction to make it look fixed
 			if(isPlants && isColored && !(isGrassTop || isVines || isTreeLeaves || isTop)){amplitude *= bPos.y>0.0 ? bPos.y-1.0 : 0.0 ;}
-
 		#endif
 
 		float wave = 1.0+mix(
-			sin(t*wave_speed*(1.0-0.5*float(underWater)) + phaseDiff),
+			sin(t*wave_speed + phaseDiff),
 			sin(t*wave_speed*1.5 + phaseDiff),
 			rainFactor);
-		wave *= amplitude*uv1.y;
+		wave *= amplitude;
 
 		//worldPos.y -= 1.0-sqrt(1.0-wave*wave);
 		worldPos.xyz -= vec3(wave,wave*wave*0.5,wave);
@@ -396,8 +398,8 @@ float camDist = length(wPos);
 		bool y6875 = bPos.y==0.6875;
 		bool y5625 = bPos.y==0.5625;
 
-		bool isLantern = ( (y6875 || y5625) && (bPos.x==0.375 || bPos.x==0.625) ) || ( (y5625 || bPos.y==0.125) && (bPos.x==0.3125 || bPos.x==0.6875) );
-		bool isChain = (bPos.x==0.4375 || bPos.x==0.5625) && y6875;
+		bool isLantern = ( (y6875 || y5625) && bPosC.x==0.125 ) || ( (y5625 || bPos.y==0.125) && (bPosC.x==0.1875) );
+		bool isChain = bPosC.x==0.0625 && y6875;
 
 		// fix for non-hanging lanterns waving top part (works only if texPosY is correct)
 		if( texPosY<0.3 || is(texPosY,0.67,0.69) || is(texPosY,0.55,0.6) ){
@@ -406,45 +408,27 @@ float camDist = length(wPos);
 
 		// X,Z axis rotation
 		if( (isChain||isLantern) && uv1.x>0.6){
+			// wave phase diff for individual lanterns
 			float offset = dot(floor(cPos),vec3(0.3927));
 
 			// simple random wave for angle
 			highp vec2 theta = vec2(t + offset,t*1.4 + offset);
 			theta = sin(vec2(theta.x,theta.x+0.7)) + rainFactor*sin(vec2(theta.y,theta.y+0.7));
-			theta *= LANTERN_WAVE*lit.y*noise1D(t*0.36);
+			theta *= LANTERN_WAVE*windStrength;
 
-			float sinA = sin(theta.x);
-			float cosA = cos(theta.x);
-			float sinB = sin(theta.y);
-			float cosB = cos(theta.y);
+			vec2 sinA = sin(theta);
+			vec2 cosA = cos(theta);
 
 			vec3 pivotPos = vec3(0.5,1.0,0.5)-bPos;
 
-			worldPos.x += pivotPos.x*(1.0-cosA) - pivotPos.y*sinA;
-			worldPos.y += pivotPos.y*(1.0-cosA*cosB) + pivotPos.x*sinA*cosB + pivotPos.z*sinB;
-			worldPos.z += pivotPos.z*(1.0-cosB) - pivotPos.y*cosA*sinB + pivotPos.x*sinA*sinB;
+			worldPos.x += dot(pivotPos.xy,vec2(1.0-cosA.x,-sinA.x));
+			worldPos.y += dot(pivotPos,vec3(sinA.x*cosA.y,1.0-cosA.x*cosA.y,sinA.y));
+			worldPos.z += dot(pivotPos,vec3(sinA.x*sinA.y,-cosA.x*sinA.y,1.0-cosA.y));
 		}
 
 	#endif //LANTERN_WAVE
 
 #else
-
-	// for non-fancy and jungle leaves
-	#if defined(PLANTS_WAVE) && defined(ALL_LEAVES_WAVE)
-	if(color.a==0.0 && camDist<20.0){
-		/// values must be a multiple of pi/4
-		float phaseDiff = dot(cPos,vec3(0.7854,0.7854,0.7854)) + disp(tiledCpos,t);
-
-		float amplitude = PLANTS_WAVE*0.4;
-		amplitude *= noise1D(t*0.36) + (rainFactor*0.4);
-
-		float wave = 1.0+sin(t*wave_speed + phaseDiff);
-		wave *= amplitude*uv1.y;
-
-		worldPos.y -= wave*wave*0.5;
-		worldPos.xz -= vec2(wave);
-	}
-	#endif
 
 	#if defined(MAYBE_WATER) && defined(WATER_WAVE)
 		if(isWater && camDist < 16.0){
