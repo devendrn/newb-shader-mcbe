@@ -6,9 +6,6 @@
 // Toggle - Flickering torch light
 //#define BLINKING_TORCH
 
-// Toggle - God rays (incomplete)
-//#define GOD_RAYS
-
 // Value - Change to 0.87 to fix slab bug (makes shadow smaller)
 #define shadow_edge 0.876
 
@@ -98,9 +95,6 @@ const vec3 marshy_water_color = vec3(0.27,0.4,0.1);
 // Toggle - Underwater Wave
 // Value - Wave intensity
 #define UNDERWATER_WAVE 0.06
-
-// Toggle - Wave effect above water surface when underwater
-//#define WAVE_ABOVE_WATER
 
 // Value - Underwater brightness
 #define underwater_brightness 0.8

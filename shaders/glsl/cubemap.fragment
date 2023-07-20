@@ -10,15 +10,8 @@
 
 varying vec4 color;
 
-//varying vec3 pos;
-
-void main()
-{
+void main(){
 	// this cubemap is used to draw over region which skyplane doesn't occupy
-
-	// gives the position of an imaginary sphere
-	//vec3 spherePos = normalize(pos);
-
 	highp vec3 col = colorCorrection(color.rgb);
 	gl_FragColor = vec4(col,clamp(color.a,0.0,1.0));
 }

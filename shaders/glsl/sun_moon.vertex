@@ -16,8 +16,7 @@
 attribute POS4 POSITION;
 attribute vec2 TEXCOORD_0;
 
-void main()
-{
+void main(){
 	POS4 pos = POSITION;
 
 	#ifdef ROTATE_SUNMOON
@@ -25,6 +24,5 @@ void main()
 	#endif
 
 	gl_Position = WORLDVIEWPROJ * pos;
-
 	uv = TEXCOORD_0;
 }

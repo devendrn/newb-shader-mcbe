@@ -10,8 +10,6 @@ uniform vec4 CURRENT_COLOR;
 
 varying vec4 color;
 
-void main()
-{
-	gl_FragColor.rgb = mix(color.rgb, CURRENT_COLOR.rgb, color.a*0.8);
-	gl_FragColor.a = 1.0;
+void main(){
+	gl_FragColor = vec4(mix(color.rgb, CURRENT_COLOR.rgb, color.a*0.8),1.0);
 }

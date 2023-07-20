@@ -3,7 +3,6 @@
 #include "fragmentVersionCentroid.h"
 
 #ifndef BYPASS_PIXEL_SHADER
-
 #if __VERSION__ >= 300
 	#if defined(TEXEL_AA) && defined(TEXEL_AA_FEATURE)
 		_centroid in highp vec2 uv0;
@@ -35,7 +34,6 @@ varying lowp float shade;
 	#define MAYBE_WATER
 	varying lowp float water;
 #endif
-
 #endif	// !BYPASS_PIXEL_SHADER
 
 #include "uniformShaderConstants.h"
@@ -48,14 +46,10 @@ LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 LAYOUT_BINDING(1) uniform sampler2D TEXTURE_1;
 LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
 
-void main()
-{
-
+void main(){
 #ifdef BYPASS_PIXEL_SHADER
-
 	gl_FragColor = vec4(0, 0, 0, 0);
 	return;
-
 #else 
 
 #if USE_TEXEL_AA
@@ -102,26 +96,20 @@ void main()
 	diffuse.rgb *= tint;
 #endif
 
-
-// transparency
 #if defined(BLEND)
+	// transparency
 	diffuse.a *= inColor.a;
 #endif
-
 
 #ifndef SEASONS
 	#if !USE_ALPHA_TEST && !defined(BLEND)
 		diffuse.a = inColor.a;
 	#endif
 #else
-	// season tree leaves color
-	//diffuse.rgb *= texture2D( TEXTURE_2, sCol.rg).rgb*2.0;
 	diffuse.rgb *= mix(vec3(1.0), texture2D( TEXTURE_2, sCol.rg).rgb*2.0, sCol.b);
-
 	diffuse.rgb *= inColor.a;
 	diffuse.a = 1.0;
 #endif
-
 
 #ifdef MAYBE_WATER
 	// edit water texture and apply transparency
@@ -135,22 +123,17 @@ void main()
 	diffuse.rgb *= inColor.rgb;
 
 #ifdef FOG
-	if(wetRefl.a > 0.0){
-		// wet effect - only on xz plane
-		if(wPosY < 0.0 ? (dFdy(wPosY) < 0.0001) : false){
+	if(wetRefl.a > 0.0){ // wet effect - only on xz plane
+		if(wPosY<0.0 && dFdy(wPosY)<0.0001){
 			float mask = wetRefl.a*(clamp(shade*10.0,8.2,8.8)-7.8);
 			diffuse.rgb = diffuse.rgb*(1.0 - 0.5*mask) + wetRefl.rgb*mask;
 		}
 	}
 #endif
 
-	// mist,fog
 	diffuse.rgb = mix(diffuse.rgb, mistColor.rgb, mistColor.a );
-
-	// color correction
 	diffuse.rgb = colorCorrection(diffuse.rgb);
 
 	gl_FragColor = diffuse;
-
 #endif // BYPASS_PIXEL_SHADER
 }

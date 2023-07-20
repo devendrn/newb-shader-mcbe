@@ -18,23 +18,17 @@ attribute mediump vec4 POSITION;
 
 varying vec4 color;
 
-void main()
-{
+void main(){
 	//// smooth clouds
-
 	POS4 worldPos = WORLD * POSITION;
 
-	// Displaces the cloud plane to look more spherical
 	vec4 newPos = POSITION;
 	newPos.y *= 0.1;
 	float len = length(worldPos.xz)*0.004;
-	newPos.y -= len*len*clamp(0.2*worldPos.y,-1.0,1.0);
+	newPos.y -= len*len*clamp(0.2*worldPos.y,-1.0,1.0); // curve the cloud plane
 
 	POS4 pos = WORLDVIEWPROJ * newPos;
 
-	gl_Position = pos;
-
-	// time
 	highp float t = TOTAL_REAL_WORLD_TIME;
 	#ifdef TIME_FLIPPING
 		// remap 0-3600s to 0-1800-0s
@@ -43,15 +37,12 @@ void main()
 
 	float rain = detectRain();
 
-	// POSITION - blocky movement - but gives a more static uv
-	//vec2 cloudUV = POSITION.xz*20.0;
-
 	color = vec4(CURRENT_COLOR.rgb,1.0);
 	color = renderClouds(color, worldPos.xz*cloud_size, t, rain);
 	color.rgb = mix(color.rgb,vec3(color.g*FOG_COLOR.g*3.5),rain*0.8);
 
-	// cloud depth
-	gl_Position.y += color.a*cloud_depth*(10.0-7.0*rain);
+	// displace cloud vertex
+	pos.y += color.a*cloud_depth*(10.0-7.0*rain);
 
 	color.a *= cloud_alpha;
 
@@ -63,8 +54,7 @@ void main()
 		color += auroras;
 	#endif
 
-	// fade out cloud layer
-	float depth = length(worldPos.xyz)*0.002;
-	color.a *= clamp(2.0-2.0*depth,0.0,1.0);
+	color.a *= clamp(2.0-2.0*length(worldPos.xyz)*0.002,0.0,1.0);
 
+	gl_Position = pos;
 }

@@ -19,22 +19,9 @@ attribute POS4 POSITION;
 
 varying vec4 color;
 
-//varying vec3 pos;
-
-void main()
-{
-	// displaces the skybox
+void main(){
 	vec4 newPos = POSITION;
-
-	// we don't need to render the top half
-	newPos.y += 0.6*float(POSITION.y<0.5);
-
-	gl_Position = WORLDVIEWPROJ * newPos;
-
-	//pos = newPos.xyz;
-
-	// will be clamped in fragment shader
-	color.a = (newPos.y-0.15)*10.0;
+	newPos.y += 0.6*float(POSITION.y<0.5); // no need to render top half
 
 	// detections
 	bool underWater = detectUnderwater();
@@ -45,4 +32,7 @@ void main()
 	color.rgb = getHorizonEdgeCol(color.rgb,rainFactor);
 	if(underWater){ color.rgb = getUnderwaterCol(); }
 
+	color.a = (newPos.y-0.15)*10.0; // will be clamped in fragment shader
+
+	gl_Position = WORLDVIEWPROJ * newPos;
 }

@@ -20,8 +20,7 @@ varying vec3 pos;
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 
-void main()
-{
+void main(){
 	#if !defined(TEXEL_AA) || !defined(TEXEL_AA_FEATURE)
 		vec4 diffuse = texture2D( TEXTURE_0, uv );
 	#else
@@ -34,14 +33,7 @@ void main()
 
 	// end sky gradient
 	vec3 color = horizon_color*smoothstep(0.0,1.0,grad);
-
-	//float streaks = sin((pos.x+pos.z)*6.0);
-	//streaks *= streaks;
-	//streaks *= 1.0-grad;
-	//color *= 1.0-streaks;
-
-	// stars
-	color += diffuse.rgb*(1.0-grad*grad);
+	color += diffuse.rgb*(1.0-grad*grad); // stars
 
 	// end void gradient
 	float glow = max((-sphereY-0.5)*2.0,0.0);

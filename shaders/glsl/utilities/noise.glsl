@@ -21,9 +21,7 @@ highp float rand(highp vec2 n){
 //}
 
 // interpolation of noise - used by rainy air blow
-// see https://thebookofshaders.com/11/
 float noise2D(vec2 p){
-
 	vec2 p0 = floor(p);
 	vec2 u = p-p0;
 
@@ -36,7 +34,5 @@ float noise2D(vec2 p){
 	float c4 = rand(p0+vec2(1.0));
 
 	float n = v.y*(c1*v.x+c2*u.x) + u.y*(c3*v.x+c4*u.x);
-
 	return min(n*n,1.0);
 }
-

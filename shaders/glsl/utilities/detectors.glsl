@@ -31,7 +31,6 @@ bool detectUnderwater(){
 
 
 float detectRain(){
-
 	// FOG_CONTROL values when clear/rain
 	// clear FOG_CONTROL.x varies with RENDER_DISTANCE
 	// reverse plotted (low accuracy) as 0.5 + 1.09/(k-0.8) where k is renderdistance in chunks
@@ -41,7 +40,7 @@ float detectRain(){
 
 	vec2 factor = clamp((start-FOG_CONTROL)/(start-end),vec2(0.0),vec2(1.0));
 
-	// ease in ease out for Y
+	// ease in ease out
 	factor.y = factor.y*factor.y*(3.0 - 2.0*factor.y);
 
 	return factor.x*factor.y;

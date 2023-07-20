@@ -7,8 +7,7 @@
 
 #include "config_utilities/extra.h"
 
-void main()
-{
+void main(){
 	// touch circle overlay
 	gl_FragColor = vec4(vec3(circle_invert_value),1.0);
 }

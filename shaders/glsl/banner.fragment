@@ -24,8 +24,7 @@
 
 LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
 
-void main()
-{
+void main(){
 	vec4 diffuse = texture2D(TEXTURE_0, uv.xy);
 	vec4 base = texture2D(TEXTURE_0, uv.zw);
 

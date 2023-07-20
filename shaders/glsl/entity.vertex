@@ -114,8 +114,7 @@ vec2 calculateLayerUV(float offset, float rotation) {
 	return uv * GLINT_UV_SCALE;
 }
 #endif
-void main()
-{
+void main(){
 	POS4 entitySpacePosition;
 	POS4 entitySpaceNormal;
 
@@ -201,9 +200,7 @@ light = lighting(entitySpacePosition, entitySpaceNormal);
 // soft shadow
 light *= 1.05-0.3*float(POSITION.y>0.0);
 
-
 #ifndef UI_ENTITY
-	
 // nether,end,underwater tint
 if(nether){
 	light *= TILE_LIGHT_COLOR.x*vec3(1.4,0.96,0.9);
@@ -214,12 +211,10 @@ if(end){
 }
 if(underWater){
 	light *= vec3(0.5,1.4,1.6);
-
 	highp float t = TIME;
 	float caustic = max(TILE_LIGHT_COLOR.x-0.46,0.0)*(0.5+0.5*sin(t + dot(POSITION.xyz,vec3(1.5)) ));
 	light += (vec3(1.0)+1.5*underwaterBaseCol)*caustic;
 }
-
 #endif
 
 // wet effect
@@ -242,5 +237,4 @@ if(rainFactor>0.0 && pos.z<24.0){
 		wetRefl.a = fresnel*rainFactor*TILE_LIGHT_COLOR.y;
 	}
 }
-
 }

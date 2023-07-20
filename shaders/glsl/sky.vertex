@@ -22,12 +22,9 @@ varying vec3 horizon_color;
 varying vec3 horizon_edge_color;
 varying vec3 wPos;
 
-void main()
-{
+void main(){
 	vec4 pos = POSITION;
-	pos.y -= COLOR.r*COLOR.r*0.4;	// Displaces the sky edge
-
-	gl_Position = WORLDVIEWPROJ * pos;
+	pos.y -= COLOR.r*COLOR.r*0.4; // make sky curved
 
 	//wPos = (WORLD * pos).xyz;
 	wPos = pos.xyz;
@@ -41,8 +38,6 @@ void main()
 	zenith_color = getZenithCol(rainFactor);
 	horizon_color = getHorizonCol(rainFactor);
 	horizon_edge_color = getHorizonEdgeCol(horizon_color,rainFactor);
-
-	// underwater sky
 	if(underWater){
 		vec3 fogcol = getUnderwaterCol();
 		zenith_color = fogcol;
@@ -50,4 +45,5 @@ void main()
 		horizon_edge_color = fogcol;
 	}
 
+	gl_Position = WORLDVIEWPROJ * pos;
 }

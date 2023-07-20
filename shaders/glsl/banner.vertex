@@ -55,7 +55,6 @@ vec3 matmulxyz(mat4 w, vec4 p){
 }
 
 vec3 lighting(){
-
 	float intensity;
 	vec3 light;
 
@@ -106,8 +105,7 @@ vec3 lighting(){
 	return light;
 }
 
-void main()
-{
+void main(){
 #ifdef USE_SKINNING
 
 #if defined(LARGE_VERTEX_SHADER_UNIFORMS)
@@ -135,7 +133,6 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 #endif
 
 #ifdef ENABLE_FOG
-
 	// detections
 	bool end = detectEnd();
 	bool nether = detectNether();
@@ -172,7 +169,5 @@ uv.zw = (TEXCOORD_0.xy * BANNER_UV_OFFSETS_AND_SCALES[0].zw) + BANNER_UV_OFFSETS
 
 	// mix fog with mist
 	mistColor = mix(mistColor,vec4(fogColor.rgb,1.0),fogColor.a);
-
 #endif //ENABLE_FOG
-
 }
